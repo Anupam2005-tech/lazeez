@@ -15,10 +15,36 @@ async function showOffers(req, res) {
       }
     });
 
-    res.render('storefront/offers', {
-      title: 'Offers',
-      offers
-    });
+    const siteUrl = process.env.SITE_URL || 'https://lazeez.com';
+    const offersDescription = 'Check out the latest offers and deals at Lazeez. Save big on your favourite dishes with exclusive discounts and promotions.';
+
+    const structuredData = {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: 'Offers & Deals - Lazeez',
+      url: siteUrl + '/offers',
+      numberOfItems: offers.length,
+      itemListElement: offers.slice(0, 10).map(function(offer, index) {
+        return {
+          '@type': 'ListItem',
+          position: index + 1,
+          item: {
+            '@type': 'Offer',
+            name: offer.name,
+            description: offer.description || undefined,
+            url: siteUrl + '/offers'
+          }
+        };
+      })
+    };
+
+  res.render('storefront/offers', {
+    title: 'Offers & Deals',
+    offers,
+    metaDescription: offersDescription,
+    canonicalUrl: '/offers',
+    structuredData
+  });
   } catch (err) {
     console.error(err);
     res.status(500).send('Error loading offers');

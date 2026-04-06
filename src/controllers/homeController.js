@@ -113,7 +113,7 @@ async function categoryPage(req, res) {
     const allMenuItems = await appCache.getMenuItems();
     const category = categories.find(c => c.id === categoryId);
 
-    if (!category) return res.status(404).render('storefront/404', { title: 'Category Not Found' });
+    if (!category) return res.status(404).render('storefront/404', { title: 'Category Not Found', robots: 'noindex, nofollow' });
 
     const allItemsJSON = JSON.stringify(allMenuItems.map(item => ({
       id: item.id, uid: item.uid, name: item.name, price: item.price,
@@ -199,7 +199,7 @@ async function itemDetail(req, res) {
     const allMenuItems = await appCache.getMenuItems();
     const item = allMenuItems.find(i => i.uid === uid);
     
-    if (!item) return res.status(404).render('storefront/404', { title: 'Not Found' });
+    if (!item) return res.status(404).render('storefront/404', { title: 'Not Found', robots: 'noindex, nofollow' });
 
     // Fetch reviews for orders that include this menu item
     const reviews = await db.feedback.findMany({

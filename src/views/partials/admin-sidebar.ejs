@@ -2,11 +2,8 @@
 <aside class="w-64 bg-[#1b1e24] text-gray-300 flex-shrink-0 flex flex-col h-full border-r border-gray-800 fixed inset-y-0 left-0 z-20 md:relative transform transition-transform duration-300 ease-in-out"
        :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'">
   <div class="h-16 flex items-center justify-between px-6 border-b border-gray-700 bg-[#1b1e24] flex-shrink-0">
-    <a href="/admin/dashboard" class="flex items-center gap-2">
-      <svg class="w-7 h-7 text-orange-500" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-      </svg>
-      <span class="text-white text-lg font-bold tracking-tight">Lazeez Admin</span>
+    <a href="/admin/dashboard" class="flex items-center">
+      <img src="/img/logo-white.svg" alt="Lazeez" class="h-8 w-auto">
     </a>
     <button @click="sidebarOpen = false" class="md:hidden text-gray-400 hover:text-white focus:outline-none">
       <span class="sr-only">Close sidebar</span>

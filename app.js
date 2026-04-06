@@ -66,6 +66,7 @@ app.use(session(sessionConfig));
 
 // Global template variables
 app.use((req, res, next) => {
+  res.locals.req = req;
   res.locals.user = req.session.user || null;
   res.locals.cart = req.session.cart || [];
   // Onboarding wizard: show if user just logged in and profile is incomplete
@@ -206,7 +207,7 @@ app.use('/admin', adminRoutes);
 
 // 404 handler
 app.use((req, res, next) => {
-  res.status(404).render('storefront/404', { title: 'Page Not Found' });
+  res.status(404).render('storefront/404', { title: 'Page Not Found', robots: 'noindex, nofollow' });
 });
 
 // Error handler

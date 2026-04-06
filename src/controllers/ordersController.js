@@ -16,7 +16,8 @@ async function listOrders(req, res) {
 
     res.render('storefront/orders', {
       title: 'My Orders',
-      orders
+      orders,
+      robots: 'noindex, nofollow'
     });
   } catch (err) {
     console.error(err);

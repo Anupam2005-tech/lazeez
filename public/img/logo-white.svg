@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80">
+  <defs>
+    <style>
+      .icon-color { fill: #fc8019; }
+      .text-main { font-family: 'Playfair Display', serif; font-weight: 800; font-size: 52px; fill: #FFFFFF; }
+      .text-tag { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600; font-size: 11px; fill: #fc8019; letter-spacing: 4px; text-transform: uppercase; }
+    </style>
+  </defs>
+
+  <!-- Balanced Side-by-Side Logo (Dark Theme / White version) -->
+  <g transform="translate(10, 10) scale(0.18)">
+    <path class="icon-color" d="M128 300 C100 280, 50 250, 60 200 C70 150, 110 180, 128 200" opacity="0.8" />
+    <path class="icon-color" d="M128 300 C156 280, 206 250, 196 200 C186 150, 146 180, 128 200" opacity="0.8" />
+    <path class="icon-color" d="M128 220 L128 100" stroke-width="14" stroke="#fc8019" stroke-linecap="round" />
+    <path class="icon-color" d="M110 100 Q128 115 146 100" fill="none" stroke="#fc8019" stroke-width="10" stroke-linecap="round" />
+    <path class="icon-color" d="M110 100 L110 40 M122 95 L122 30 M134 95 L134 30 M146 100 L146 40" stroke="#fc8019" stroke-width="8" stroke-linecap="round" />
+    <path class="icon-color" d="M115 220 C40 200, 0 120, 30 60 C50 20, 100 50, 115 100" />
+    <path class="icon-color" d="M141 220 C216 200, 256 120, 226 60 C206 20, 156 50, 141 100" />
+    <path d="M155 110 L210 60" stroke="#FC8019" stroke-width="3" stroke-opacity="0.3" stroke-linecap="round" />
+  </g>
+
+  <text x="75" y="55" class="text-main">Lazeez</text>
+  <text x="78" y="72" class="text-tag">Let's spice it up</text>
+  <circle cx="285" cy="42" r="3" fill="#fc8019" />
+</svg>

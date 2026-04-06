@@ -196,7 +196,7 @@ async function orderSuccess(req, res) {
   try {
     const order = await db.order.findUnique({ where: { id: orderId } });
     if (!order || order.userId !== req.session.user.id) return res.redirect('/');
-    res.render('storefront/order-success', { title: 'Order Successful', order });
+    res.render('storefront/order-success', { title: 'Order Successful', order, robots: 'noindex, nofollow' });
   } catch (err) {
     res.redirect('/');
   }

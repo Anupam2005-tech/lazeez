@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= typeof title !== 'undefined' ? title + ' - Lazeez' : 'Lazeez Management System' %></title>
+  <title><%= typeof title !== 'undefined' ? title + ' - Lazeez' : 'Lazeez' %></title>
+  <link rel="icon" type="image/svg+xml" href="/img/logo.svg">
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
@@ -16,7 +17,11 @@
   <% if (typeof recaptchaSiteKey !== 'undefined' && recaptchaSiteKey) { %>
   <script src="https://www.google.com/recaptcha/api.js?render=<%= recaptchaSiteKey %>" async defer></script>
   <% } %>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
   <style>
+    :root { font-family: 'Plus Jakarta Sans', sans-serif; }
     /* Custom styles */
     .glassmorphism {
       background: rgba(255, 255, 255, 0.7);
