@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title + ' | Order Food Online' : 'Order Food Online | Lazeez' %></title>
+
+  <%
+    var _siteUrl = process.env.SITE_URL || 'https://lazeez.com';
+    var _canonicalUrl = typeof canonicalUrl !== 'undefined' && canonicalUrl ? _siteUrl + canonicalUrl : _siteUrl + req.path;
+    var _metaDescription = typeof metaDescription !== 'undefined' && metaDescription ? metaDescription : 'Order delicious food online from Lazeez. Fresh ingredients, authentic recipes, and fast delivery. Browse our full menu and order now!';
+    var _ogImage = typeof ogImage !== 'undefined' && ogImage ? ogImage : (_siteUrl + '/images/og-default.jpg');
+    var _ogType = typeof ogType !== 'undefined' && ogType ? ogType : 'website';
+    var _robots = typeof robots !== 'undefined' && robots ? robots : 'index, follow';
+  %>
+
+  <meta name="description" content="<%= _metaDescription %>">
+  <meta name="keywords" content="order food online, food delivery, restaurant, Lazeez, online ordering, takeaway, dine in">
+  <meta name="author" content="Lazeez">
+  <meta name="robots" content="<%= _robots %>">
+  <meta name="theme-color" content="#fc8019">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Lazeez">
+  <link rel="canonical" href="<%= _canonicalUrl %>">
+
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="<%= _ogType %>">
+  <meta property="og:title" content="<%= typeof title !== 'undefined' ? title + ' | Order Food Online' : 'Order Food Online | Lazeez' %>">
+  <meta property="og:description" content="<%= _metaDescription %>">
+  <meta property="og:url" content="<%= _canonicalUrl %>">
+  <meta property="og:site_name" content="Lazeez">
+  <meta property="og:image" content="<%= _ogImage %>">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Lazeez - Order Food Online">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="<%= typeof title !== 'undefined' ? title + ' | Order Food Online' : 'Order Food Online | Lazeez' %>">
+  <meta name="twitter:description" content="<%= _metaDescription %>">
+  <meta name="twitter:image" content="<%= _ogImage %>">
+
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+
+  <% if (typeof structuredData !== 'undefined' && structuredData) { %>
+  <script type="application/ld+json"><%- JSON.stringify(structuredData) %></script>
+  <% } %>
+  
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
+  <script>
+    window.FIREBASE_CONFIG = {
+      apiKey: "<%= firebaseApiKey %>",
+      authDomain: "<%= firebaseAuthDomain %>",
+      projectId: "<%= firebaseProjectId %>",
+      storageBucket: "<%= firebaseStorageBucket %>",
+      messagingSenderId: "<%= firebaseMessagingSenderId %>",
+      appId: "<%= firebaseAppId %>"
+    };
+  </script>
+  <script src="/js/firebase-client.js"></script>
+  <!-- Leaflet CSS & JS (OpenStreetMap) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <!-- Google reCAPTCHA v3 -->
+  <script>
+    window.RECAPTCHA_SITE_KEY = '<%= recaptchaSiteKey %>';
+    window.RECAPTCHA_V2_SITE_KEY = '<%= recaptchaV2SiteKey %>';
+  </script>
+  <style>.grecaptcha-badge { display: none !important; }</style>
+  <% if (typeof recaptchaSiteKey !== 'undefined' && recaptchaSiteKey) { %>
+  <script src="https://www.google.com/recaptcha/api.js?render=<%= recaptchaSiteKey %>" async defer></script>
+  <% } %>
+  <!-- Tailwind Config to allow custom color -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            orange: {
+              500: '#fc8019',
+              600: '#e57317',
+            },
+            green: {
+              600: '#1ba672'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Alpine JS for interactions -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    .carousel-track::-webkit-scrollbar { display: none; }
+    .carousel-track { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+  
+  <!-- Cart state from server session -->
+  <script id="resto-cart-data" type="application/json"><%- JSON.stringify(cart || []) %></script>
+  <script>
+    window.RestoCartState = { 
+      items: JSON.parse(document.getElementById('resto-cart-data').textContent), 
+      total: Number('<%= typeof total !== "undefined" ? total : (typeof totalAmount !== "undefined" ? totalAmount : 0) %>') 
+    };
+    window.RESTAURANT_LAT = Number('<%= typeof restaurantLat !== "undefined" ? restaurantLat : 23.5492425 %>');
+    window.RESTAURANT_LNG = Number('<%= typeof restaurantLng !== "undefined" ? restaurantLng : 91.4668604 %>');
+  </script>
+
+  <!-- Location Service (Leaflet + Nominatim) -->
+  <script defer src="/js/google-location-service.js"></script>
+  <!-- Real-time events (SSE) -->
+  <script defer src="/js/realtime.js"></script>
+
+  <!-- Custom Styles (Swiggy Clone) -->
+  <link rel="stylesheet" href="/css/premium.css">
+</head>
+<body class="flex flex-col min-h-screen text-gray-800 antialiased selection:bg-orange-500 selection:text-white bg-white">
+
+  <!-- Global Page Loader (globalLoader equivalent) -->
+  <div id="global-page-loader" style="position:fixed;inset:0;z-index:99999;background:rgba(255,255,255,0.95);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" style="width:80px;height:80px;">
+      <circle class="pl__ring1" cx="64" cy="64" r="60" stroke-width="8" stroke="hsl(3,90%,55%)" stroke-dasharray="377 377" stroke-dashoffset="-376.4" stroke-linecap="round" fill="none" transform="rotate(-90,64,64)" style="transform-box:fill-box;transform-origin:50% 50%;animation:pl_ring1 4s 0s ease-in-out infinite;"></circle>
+      <circle class="pl__ring2" cx="64" cy="64" r="52.5" stroke-width="7" stroke="hsl(13,90%,55%)" stroke-dasharray="330 330" stroke-dashoffset="-329.3" stroke-linecap="round" fill="none" transform="rotate(-90,64,64)" style="transform-box:fill-box;transform-origin:50% 50%;animation:pl_ring2 4s 0.04s ease-in-out infinite;"></circle>
+      <circle class="pl__ring3" cx="64" cy="64" r="46" stroke-width="6" stroke="hsl(23,90%,55%)" stroke-dasharray="289 289" stroke-dashoffset="-288.6" stroke-linecap="round" fill="none" transform="rotate(-90,64,64)" style="transform-box:fill-box;transform-origin:50% 50%;animation:pl_ring3 4s 0.08s ease-in-out infinite;"></circle>
+      <circle class="pl__ring4" cx="64" cy="64" r="40.5" stroke-width="5" stroke="hsl(33,90%,55%)" stroke-dasharray="254.5 254.5" stroke-dashoffset="-254" stroke-linecap="round" fill="none" transform="rotate(-90,64,64)" style="transform-box:fill-box;transform-origin:50% 50%;animation:pl_ring4 4s 0.12s ease-in-out infinite;"></circle>
+      <circle class="pl__ring5" cx="64" cy="64" r="36" stroke-width="4" stroke="hsl(43,90%,55%)" stroke-dasharray="226.2 226.2" stroke-dashoffset="-225.8" stroke-linecap="round" fill="none" transform="rotate(-90,64,64)" style="transform-box:fill-box;transform-origin:50% 50%;animation:pl_ring5 4s 0.16s ease-in-out infinite;"></circle>
+      <circle class="pl__ring6" cx="64" cy="64" r="32.5" stroke-width="3" stroke="hsl(53,90%,55%)" stroke-dasharray="204.2 204.2" stroke-dashoffset="-203.9" stroke-linecap="round" fill="none" transform="rotate(-90,64,64)" style="transform-box:fill-box;transform-origin:50% 50%;animation:pl_ring6 4s 0.2s ease-in-out infinite;"></circle>
+    </svg>
+    <span style="font-size:14px;font-weight:600;color:#6b7280;">Loading...</span>
+  </div>
+  <style>
+    @keyframes pl_ring1 { from { stroke-dashoffset: -376.2; transform: rotate(-0.25turn); } 23% { stroke-dashoffset: -94.2; transform: rotate(1turn); } 46%, 50% { stroke-dashoffset: -376.2; transform: rotate(2.25turn); } 73% { stroke-dashoffset: -94.2; transform: rotate(3.5turn); } 96%, to { stroke-dashoffset: -376.2; transform: rotate(4.75turn); } }
+    @keyframes pl_ring2 { from { stroke-dashoffset: -329.2; transform: rotate(-0.25turn); } 23% { stroke-dashoffset: -82.5; transform: rotate(1turn); } 46%, 50% { stroke-dashoffset: -329.2; transform: rotate(2.25turn); } 73% { stroke-dashoffset: -82.5; transform: rotate(3.5turn); } 96%, to { stroke-dashoffset: -329.2; transform: rotate(4.75turn); } }
+    @keyframes pl_ring3 { from { stroke-dashoffset: -288.4; transform: rotate(-0.25turn); } 23% { stroke-dashoffset: -72.3; transform: rotate(1turn); } 46%, 50% { stroke-dashoffset: -288.4; transform: rotate(2.25turn); } 73% { stroke-dashoffset: -72.3; transform: rotate(3.5turn); } 96%, to { stroke-dashoffset: -288.4; transform: rotate(4.75turn); } }
+    @keyframes pl_ring4 { from { stroke-dashoffset: -254.0; transform: rotate(-0.25turn); } 23% { stroke-dashoffset: -63.6; transform: rotate(1turn); } 46%, 50% { stroke-dashoffset: -254.0; transform: rotate(2.25turn); } 73% { stroke-dashoffset: -63.6; transform: rotate(3.5turn); } 96%, to { stroke-dashoffset: -254.0; transform: rotate(4.75turn); } }
+    @keyframes pl_ring5 { from { stroke-dashoffset: -225.7; transform: rotate(-0.25turn); } 23% { stroke-dashoffset: -56.5; transform: rotate(1turn); } 46%, 50% { stroke-dashoffset: -225.7; transform: rotate(2.25turn); } 73% { stroke-dashoffset: -56.5; transform: rotate(3.5turn); } 96%, to { stroke-dashoffset: -225.7; transform: rotate(4.75turn); } }
+    @keyframes pl_ring6 { from { stroke-dashoffset: -203.8; transform: rotate(-0.25turn); } 23% { stroke-dashoffset: -51.1; transform: rotate(1turn); } 46%, 50% { stroke-dashoffset: -203.8; transform: rotate(2.25turn); } 73% { stroke-dashoffset: -51.1; transform: rotate(3.5turn); } 96%, to { stroke-dashoffset: -203.8; transform: rotate(4.75turn); } }
+  </style>
+  <script>
+    // Hide global loader when page is ready
+    (function() {
+      var loader = document.getElementById('global-page-loader');
+      function hideLoader() { if (loader) loader.style.display = 'none'; }
+      function showLoader() { if (loader) loader.style.display = 'flex'; }
+      if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        setTimeout(hideLoader, 200);
+      } else {
+        document.addEventListener('DOMContentLoaded', function() { setTimeout(hideLoader, 200); });
+      }
+      // Fix: hide loader when page is restored from bfcache (back/forward button)
+      window.addEventListener('pageshow', function(e) {
+        if (e.persisted) hideLoader();
+      });
+      // Show loader on navigation (non-AJAX link clicks and form submissions)
+      document.addEventListener('click', function(e) {
+        var a = e.target.closest('a');
+        if (!a || !a.href) return;
+        if (a.href.startsWith('javascript:') || a.href.includes('#') || a.target === '_blank') return;
+        if (a.hasAttribute('onclick') || a.getAttribute('href') === '#') return;
+        showLoader();
+      });
+      document.addEventListener('submit', function(e) {
+        var form = e.target;
+        if (form.hasAttribute('onsubmit')) return;
+        showLoader();
+      });
+    })();
+
+    // Global UI Helper for button loading
+    window.RestoUI = {
+      setLoading: function(btn, isLoading) {
+        if (!btn) return;
+        if (isLoading) {
+          btn.disabled = true;
+          btn.classList.add('btn-loading');
+          // If button is white/light, use dark spinner
+          var bg = window.getComputedStyle(btn).backgroundColor;
+          if (bg === 'rgb(255, 255, 255)' || bg === 'rgba(0, 0, 0, 0)' || btn.classList.contains('bg-white')) {
+            btn.classList.add('btn-loading-dark');
+          }
+        } else {
+          btn.disabled = false;
+          btn.classList.remove('btn-loading', 'btn-loading-dark');
+        }
+      }
+    };
+  </script>
+
+  <!-- Included Navbar -->
+  <%- include('navbar') %>
+
+  <!-- Global Confirm Modal -->
+  <%- include('confirmModal') %>
+
+  <!-- Main Content Wrapper -->
+  <main class="flex-grow pt-24 pb-12 relative z-10 w-full">
+
+  <!-- Mobile Back Button (visible on mobile only) -->
+  <div class="sm:hidden max-w-[1200px] mx-auto px-3 -mt-2 mb-3">
+    <button onclick="if(history.length>1){history.back()}else{window.location.href='/'}" class="flex items-center gap-1 text-[#3d4152] bg-transparent border-none cursor-pointer p-1 -ml-1">
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+      </svg>
+    </button>
+  </div>
+
+  <% if (typeof popupOffer !== 'undefined' && popupOffer) { %>
+  <!-- One-time offer popup -->
+  <div x-data="{ show: true }" x-show="show" x-cloak class="fixed inset-0 z-[200] flex items-center justify-center" x-transition>
+    <% const _dismissPayload = JSON.stringify({offerId: popupOffer.id}); %>
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="show=false; navigator.sendBeacon('/offers/dismiss-popup', new Blob(['<%= _dismissPayload %>'], {type:'application/json'}))"></div>
+    <div class="relative bg-white rounded-2xl shadow-2xl max-w-lg w-[92%] mx-4 overflow-hidden" @click.stop>
+      <!-- Close button -->
+      <button @click="show=false; navigator.sendBeacon('/offers/dismiss-popup', new Blob(['<%= _dismissPayload %>'], {type:'application/json'}))" class="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-black/40 hover:bg-black/60 flex items-center justify-center transition-colors">
+        <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+      <% if (popupOffer.image) { %>
+        <div class="h-56 bg-gray-100 overflow-hidden">
+          <img src="<%= popupOffer.image %>" class="w-full h-full object-cover" alt="<%= popupOffer.name %>">
+        </div>
+      <% } else { %>
+        <div class="h-56 bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
+          <svg class="w-16 h-16 text-white/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/>
+          </svg>
+        </div>
+      <% } %>
+      <div class="p-6">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-[11px] font-bold text-orange-700 bg-orange-50 border border-orange-200 px-2.5 py-0.5 rounded-full uppercase">New Offer</span>
+        </div>
+        <h3 class="text-xl font-bold text-[#3d4152] mb-2"><%= popupOffer.name %></3>
+        <p class="text-sm text-[#686b78] mb-5 leading-relaxed"><%= popupOffer.description || 'Check out this exciting new offer!' %></p>
+        <div class="flex gap-3">
+          <a href="/menu<%= popupOffer.dishName ? '?search=' + encodeURIComponent(popupOffer.dishName) : '' %>" class="flex-1 text-center bg-[#60b246] hover:bg-green-600 text-white font-bold py-3 rounded-xl text-sm transition-colors" @click="show=false; navigator.sendBeacon('/offers/dismiss-popup', new Blob(['<%= _dismissPayload %>'], {type:'application/json'}))">View Offers</a>
+          <button @click="show=false; navigator.sendBeacon('/offers/dismiss-popup', new Blob(['<%= _dismissPayload %>'], {type:'application/json'}))" class="px-5 py-3 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold rounded-xl text-sm transition-colors">Later</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <% } %>
+
+  <%- include('onboarding') %>
+

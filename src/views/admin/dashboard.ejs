@@ -1,0 +1,294 @@
+<div x-data="{ 
+    tab: '<%= activeTab %>',
+    setTab(newTab) {
+        this.tab = newTab;
+        const url = new URL(window.location);
+        url.searchParams.set('tab', newTab);
+        window.history.pushState({}, '', url);
+        // Scroll to top when switching tabs
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+}" class="space-y-6">
+
+    <!-- Tab Navigation (Internal) -->
+    <div class="flex border-b border-gray-200 overflow-x-auto -mx-2 px-2">
+        <button @click="setTab('overview')" :class="tab === 'overview' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-3 px-3 sm:px-6 border-b-2 font-medium text-xs sm:text-sm">
+            Overview
+        </button>
+        <button @click="setTab('reports')" :class="tab === 'reports' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-3 px-3 sm:px-6 border-b-2 font-medium text-xs sm:text-sm">
+            Reports
+        </button>
+        <button @click="setTab('orders')" :class="tab === 'orders' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-3 px-3 sm:px-6 border-b-2 font-medium text-xs sm:text-sm">
+            Orders
+        </button>
+        <button @click="setTab('menu')" :class="tab === 'menu' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-3 px-3 sm:px-6 border-b-2 font-medium text-xs sm:text-sm">
+            Menu
+        </button>
+        <button @click="setTab('offers')" :class="tab === 'offers' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-3 px-3 sm:px-6 border-b-2 font-medium text-xs sm:text-sm">
+            Offers
+        </button>
+    </div>
+
+    <!-- Pending Refunds Banner -->
+    <% if (typeof pendingRefundCount !== 'undefined' && pendingRefundCount > 0) { %>
+      <a href="/admin/refunds" class="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 hover:bg-amber-100 transition-colors">
+        <svg class="w-5 h-5 text-amber-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <span class="text-sm font-semibold text-amber-800"><%= pendingRefundCount %> pending refund<%= pendingRefundCount !== 1 ? 's' : '' %> need processing</span>
+        <svg class="w-4 h-4 text-amber-600 ml-auto shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+        </svg>
+      </a>
+    <% } %>
+
+    <!-- Section: Overview -->
+    <div x-show="tab === 'overview'" x-transition x-cloak>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6">
+            <!-- Today's Orders -->
+            <div class="bg-white rounded-xl shadow-sm border p-4 sm:p-5">
+                <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider">Today's Orders</dt>
+                <dd id="stat-today-orders" class="mt-1 text-2xl sm:text-3xl font-bold text-gray-900"><%= todayOrders %></dd>
+            </div>
+            <!-- Today's Revenue -->
+            <div class="bg-orange-500 rounded-xl shadow-sm p-4 sm:p-5 text-white">
+                <dt class="text-xs font-medium opacity-80 uppercase tracking-wider">Today's Revenue</dt>
+                <dd id="stat-today-revenue" class="mt-1 text-2xl sm:text-3xl font-bold">₹<%= todayRevenue.toFixed(2) %></dd>
+            </div>
+            <!-- Pending Orders -->
+            <div class="bg-white rounded-xl shadow-sm border p-4 sm:p-5">
+                <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider">Pending</dt>
+                <dd id="stat-pending-count" class="mt-1 text-2xl sm:text-3xl font-bold <%= pendingCount > 0 ? 'text-yellow-600' : 'text-gray-900' %>"><%= pendingCount %></dd>
+            </div>
+            <!-- Menu Items -->
+            <div class="bg-white rounded-xl shadow-sm border p-4 sm:p-5">
+                <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider">Menu Items</dt>
+                <dd class="mt-1 text-2xl sm:text-3xl font-bold text-gray-900"><%= items.length %></dd>
+            </div>
+            <!-- Categories -->
+            <div class="bg-white rounded-xl shadow-sm border p-4 sm:p-5">
+                <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider">Categories</dt>
+                <dd class="mt-1 text-2xl sm:text-3xl font-bold text-gray-900"><%= categories.length %></dd>
+            </div>
+        </div>
+
+        <!-- Recent Orders + Delivery Settings -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+            <!-- Recent Orders -->
+            <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border p-4 sm:p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-base sm:text-lg font-bold text-gray-800">Recent Orders</h3>
+                    <button @click="setTab('orders')" class="text-orange-500 text-xs sm:text-sm font-medium hover:underline">View all &rarr;</button>
+                </div>
+                <div id="recent-orders-list">
+                    <% if (orders.length === 0) { %>
+                        <p class="text-sm text-gray-400 text-center py-8">No orders yet</p>
+                    <% } else { %>
+                        <div class="space-y-3">
+                            <% orders.slice(0, 5).forEach(order => { %>
+                                <a href="/admin/orders/<%= order.id %>" data-order-id="<%= order.id %>" class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors border border-gray-100">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <span class="text-sm font-bold text-gray-900 shrink-0">#<%= order.id %></span>
+                                        <span class="text-xs sm:text-sm text-gray-500 truncate"><%= order.user?.name || order.user?.email || 'Guest' %></span>
+                                    </div>
+                                    <div class="flex items-center gap-3 shrink-0">
+                                        <span class="stat-order-amount text-sm font-bold text-gray-900">₹<%= order.totalAmount.toFixed(2) %></span>
+                                        <% 
+                                            const statusColors = { 'Pending': 'bg-yellow-100 text-yellow-800', 'Preparing': 'bg-blue-100 text-blue-800', 'Ready': 'bg-indigo-100 text-indigo-800', 'Delivered': 'bg-green-100 text-green-800', 'Cancelled': 'bg-red-100 text-red-800' };
+                                            const color = statusColors[order.status] || 'bg-gray-100 text-gray-800';
+                                        %>
+                                        <span class="stat-order-status px-2 py-0.5 text-xs font-bold rounded-full <%= color %>"><%= order.status %></span>
+                                    </div>
+                                </a>
+                            <% }) %>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="space-y-4 sm:space-y-6">
+                <!-- Delivery Settings -->
+                <div class="bg-white rounded-xl shadow-sm border p-4 sm:p-6">
+                    <h3 class="text-base sm:text-lg font-bold text-gray-800 mb-4">Delivery Settings</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Delivery Rate (per 5 km)</label>
+                            <div class="flex items-center gap-2">
+                                <span class="text-gray-500 font-medium">₹</span>
+                                <input type="number" id="setting-delivery-rate" value="<%= deliveryRatePer5km %>" min="1" step="1" class="border border-gray-300 rounded-lg px-3 py-2 text-sm w-full sm:w-24 outline-none focus:border-orange-500">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Platform Fee</label>
+                            <div class="flex items-center gap-2">
+                                <span class="text-gray-500 font-medium">₹</span>
+                                <input type="number" id="setting-platform-fee" value="<%= platformFee %>" min="0" step="1" class="border border-gray-300 rounded-lg px-3 py-2 text-sm w-full sm:w-24 outline-none focus:border-orange-500">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t">
+                        <span id="settings-status" class="text-xs text-gray-400 block mb-2"></span>
+                        <button onclick="saveDeliverySettings()" class="w-full bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors">Save Settings</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section: Reports -->
+    <div x-show="tab === 'reports'" x-transition x-cloak>
+        <div class="bg-white rounded-xl shadow-sm border p-6">
+            <%- include('./reports/index') %>
+        </div>
+    </div>
+
+    <!-- Section: Orders -->
+    <div x-show="tab === 'orders'" x-transition x-cloak>
+        <div class="bg-white rounded-xl shadow-sm border p-6">
+            <%- include('./orders/index') %>
+        </div>
+    </div>
+
+    <!-- Section: Menu -->
+    <div x-show="tab === 'menu'" x-transition x-cloak>
+        <div class="bg-white rounded-xl shadow-sm border p-6">
+            <%- include('./menu/index') %>
+        </div>
+    </div>
+
+    <!-- Section: Offers -->
+    <div x-show="tab === 'offers'" x-transition x-cloak>
+        <div class="bg-white rounded-xl shadow-sm border p-6">
+            <%- include('./offers/index') %>
+        </div>
+    </div>
+
+</div>
+
+<!-- Logic for Sidebar Integration and Settings -->
+<script>
+  window.addEventListener('admin-change-tab', (e) => {
+    const alpineData = document.querySelector('[x-data]').__x.$data;
+    if (alpineData) alpineData.setTab(e.detail.tab);
+  });
+
+  window.saveDeliverySettings = function() {
+    var statusEl = document.getElementById('settings-status');
+    var deliveryRate = document.getElementById('setting-delivery-rate').value;
+    var platformFee = document.getElementById('setting-platform-fee').value;
+    
+    statusEl.textContent = 'Saving...';
+    statusEl.className = 'text-sm text-gray-500';
+
+    fetch('/admin/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        deliveryRatePer5km: parseFloat(deliveryRate),
+        platformFee: parseFloat(platformFee)
+      })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.success) {
+        statusEl.textContent = 'Settings saved successfully!';
+        statusEl.className = 'text-sm text-green-600 font-medium';
+        setTimeout(function() { statusEl.textContent = ''; }, 3000);
+      } else {
+        statusEl.textContent = 'Failed to save settings';
+        statusEl.className = 'text-sm text-red-600';
+      }
+    })
+    .catch(function() {
+      statusEl.textContent = 'Error saving settings';
+      statusEl.className = 'text-sm text-red-600';
+    });
+  };
+
+  (function() {
+    var statusColors = {
+        'Pending': 'bg-yellow-100 text-yellow-800',
+        'Preparing': 'bg-blue-100 text-blue-800',
+        'Ready': 'bg-indigo-100 text-indigo-800',
+        'Delivered': 'bg-green-100 text-green-800',
+        'Cancelled': 'bg-red-100 text-red-800'
+    };
+
+    function handleNewOrder(data) {
+        // Update Stats Cards
+        var todayOrdersEl = document.getElementById('stat-today-orders');
+        var todayRevenueEl = document.getElementById('stat-today-revenue');
+        var pendingCountEl = document.getElementById('stat-pending-count');
+
+        if (todayOrdersEl) {
+            var current = parseInt(todayOrdersEl.textContent.trim(), 10);
+            todayOrdersEl.textContent = current + 1;
+        }
+        if (todayRevenueEl) {
+            var current = parseFloat(todayRevenueEl.textContent.replace('₹', '').trim());
+            todayRevenueEl.textContent = '₹' + (current + data.totalAmount).toFixed(2);
+        }
+        if (pendingCountEl) {
+            var current = parseInt(pendingCountEl.textContent.trim(), 10);
+            pendingCountEl.textContent = current + 1;
+            pendingCountEl.className = 'mt-1 text-2xl sm:text-3xl font-bold text-yellow-600';
+        }
+
+        // Update Recent Orders List
+        var listContainer = document.getElementById('recent-orders-list');
+        if (listContainer) {
+            var empty = listContainer.querySelector('p.text-gray-400');
+            if (empty) {
+                listContainer.innerHTML = '<div class="space-y-3"></div>';
+            }
+            var list = listContainer.querySelector('.space-y-3');
+            if (list) {
+                var color = statusColors[data.status] || 'bg-gray-100 text-gray-800';
+                var a = document.createElement('a');
+                a.href = '/admin/orders/' + data.orderId;
+                a.setAttribute('data-order-id', data.orderId);
+                a.className = 'flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-all border border-green-200 bg-green-50';
+                a.innerHTML = 
+                    '<div class="flex items-center gap-3 min-w-0">' +
+                    '<span class="text-sm font-bold text-gray-900 shrink-0">#' + data.orderId + '</span>' +
+                    '<span class="text-xs sm:text-sm text-gray-500 truncate">' + (data.customerName || 'Guest') + '</span>' +
+                    '</div>' +
+                    '<div class="flex items-center gap-3 shrink-0">' +
+                    '<span class="stat-order-amount text-sm font-bold text-gray-900">₹' + data.totalAmount.toFixed(2) + '</span>' +
+                    '<span class="stat-order-status px-2 py-0.5 text-xs font-bold rounded-full ' + color + '">' + data.status + '</span>' +
+                    '</div>';
+                list.insertBefore(a, list.firstChild);
+                if (list.children.length > 5) list.lastElementChild.remove();
+                setTimeout(function() { a.classList.remove('bg-green-50', 'border-green-200'); a.classList.add('border-gray-100'); }, 3000);
+            }
+        }
+    }
+
+    function handleStatusUpdate(data) {
+        // Update Pending Count if status changed from Pending
+        // Note: Realistically we'd need to know previous status, but we can assume we only decrement if it was pending
+        // Or better yet, we can just fetch the counts periodically. But for now, we'll update the specific order status.
+        var orderLink = document.querySelector('a[data-order-id="' + data.orderId + '"]');
+        if (orderLink) {
+            var statusBadge = orderLink.querySelector('.stat-order-status');
+            if (statusBadge) {
+                statusBadge.textContent = data.status;
+                statusBadge.className = 'stat-order-status px-2 py-0.5 text-xs font-bold rounded-full ' + (statusColors[data.status] || 'bg-gray-100 text-gray-800');
+                orderLink.classList.add('bg-blue-50');
+                setTimeout(function() { orderLink.classList.remove('bg-blue-50'); }, 1000);
+            }
+        }
+    }
+
+    function init() {
+        if (!window.RestoRealtime) { setTimeout(init, 500); return; }
+        window.RestoRealtime.on('order:new', handleNewOrder);
+        window.RestoRealtime.on('order:status', handleStatusUpdate);
+        window.RestoRealtime.on('order:cancel', function(data) { handleStatusUpdate({ orderId: data.orderId, status: 'Cancelled' }); });
+    }
+    init();
+  })();
+</script>

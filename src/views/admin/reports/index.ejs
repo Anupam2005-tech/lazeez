@@ -1,0 +1,149 @@
+<div class="mb-6 flex justify-between items-center flex-wrap gap-4">
+  <h2 class="text-2xl font-bold text-gray-800">Reporting Dashboard</h2>
+  
+  <div class="flex gap-2 items-center">
+    <select id="reports-revenue-range" class="bg-white border text-sm rounded-lg px-3 py-2 shadow-sm focus:outline-none focus:ring-indigo-500" onchange="filterReportsRevenue(this.value)">
+      <option value="all" <%= range === 'all' ? 'selected' : '' %>>All Time</option>
+      <option value="today" <%= range === 'today' ? 'selected' : '' %>>Today</option>
+      <optgroup label="Days">
+        <option value="7d" <%= range === '7d' ? 'selected' : '' %>>Last 7 Days</option>
+        <option value="15d" <%= range === '15d' ? 'selected' : '' %>>Last 15 Days</option>
+        <option value="21d" <%= range === '21d' ? 'selected' : '' %>>Last 21 Days</option>
+        <option value="30d" <%= range === '30d' ? 'selected' : '' %>>Last 30 Days</option>
+      </optgroup>
+      <optgroup label="Months">
+        <option value="3m" <%= range === '3m' ? 'selected' : '' %>>Last 3 Months</option>
+        <option value="6m" <%= range === '6m' ? 'selected' : '' %>>Last 6 Months</option>
+        <option value="9m" <%= range === '9m' ? 'selected' : '' %>>Last 9 Months</option>
+      </optgroup>
+      <optgroup label="Years">
+        <option value="1y" <%= range === '1y' ? 'selected' : '' %>>Last 1 Year</option>
+        <option value="1.5y" <%= range === '1.5y' ? 'selected' : '' %>>Last 1.5 Years</option>
+        <option value="2y" <%= range === '2y' ? 'selected' : '' %>>Last 2 Years</option>
+        <option value="2.5y" <%= range === '2.5y' ? 'selected' : '' %>>Last 2.5 Years</option>
+        <option value="3y" <%= range === '3y' ? 'selected' : '' %>>Last 3 Years</option>
+        <option value="3.5y" <%= range === '3.5y' ? 'selected' : '' %>>Last 3.5 Years</option>
+        <option value="4y" <%= range === '4y' ? 'selected' : '' %>>Last 4 Years</option>
+        <option value="4.5y" <%= range === '4.5y' ? 'selected' : '' %>>Last 4.5 Years</option>
+        <option value="5y" <%= range === '5y' ? 'selected' : '' %>>Last 5 Years</option>
+      </optgroup>
+    </select>
+    <span id="reports-revenue-loading" class="text-xs text-gray-400 hidden">Loading...</span>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+  <div class="bg-white rounded-lg shadow-sm border p-6 flex flex-col justify-center">
+    <dt class="text-sm font-medium text-gray-500 truncate">Total Orders</dt>
+    <dd id="reports-orders-count" class="mt-1 text-3xl font-semibold text-gray-900"><%= totalOrders %></dd>
+  </div>
+  
+  <div class="bg-white rounded-lg shadow-sm border p-6 flex flex-col justify-center">
+    <dt id="reports-revenue-label" class="text-sm font-medium text-gray-500 truncate">Total Revenue (<%= rangeLabel %>)</dt>
+    <dd id="reports-revenue-value" class="mt-1 text-3xl font-semibold text-green-600">₹<%= totalRevenue.toFixed(2) %></dd>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+  
+  <!-- Chart -->
+  <div class="lg:col-span-2 bg-white rounded-lg shadow-sm border p-6">
+    <h3 class="text-lg font-medium text-gray-900 mb-6 border-b pb-2">Orders by Status</h3>
+    <div class="relative h-64 w-full">
+      <canvas id="reportsStatusChart" data-status-counts="<%= JSON.stringify(statusCounts || {}) %>"></canvas>
+    </div>
+  </div>
+
+  <!-- Top Items -->
+  <div class="bg-white rounded-lg shadow-sm border p-6">
+    <h3 class="text-lg font-medium text-gray-900 mb-6 border-b pb-2">Top Selling Items</h3>
+    <ul id="reports-top-items" role="list" class="divide-y divide-gray-200">
+      <% if (topItems.length === 0) { %>
+        <li class="py-4 text-sm text-gray-500 text-center">No data available</li>
+      <% } else { %>
+        <% topItems.forEach((item, idx) => { %>
+          <li class="py-4 flex justify-between">
+            <div class="flex items-center">
+              <span class="text-indigo-600 font-bold mr-3">#<%= idx + 1 %></span>
+              <span class="font-medium text-gray-900"><%= item.name %></span>
+            </div>
+            <span class="text-sm border bg-gray-50 px-2 py-1 rounded-full"><%= item.count %> sold</span>
+          </li>
+        <% }) %>
+      <% } %>
+    </ul>
+  </div>
+
+</div>
+
+<!-- Chart.js Init + AJAX Revenue Filter -->
+<script>
+  var reportsChart = null;
+
+  function filterReportsRevenue(range) {
+    var loadingEl = document.getElementById('reports-revenue-loading');
+    if (loadingEl) loadingEl.classList.remove('hidden');
+    fetch('/admin/api/revenue?range=' + encodeURIComponent(range))
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        document.getElementById('reports-revenue-label').textContent = 'Total Revenue (' + data.rangeLabel + ')';
+        document.getElementById('reports-revenue-value').textContent = '₹' + data.totalRevenue.toFixed(2);
+        document.getElementById('reports-orders-count').textContent = data.totalOrders;
+        // Update chart
+        if (reportsChart) {
+          reportsChart.data.datasets[0].data = [
+            data.statusCounts.Pending || 0,
+            data.statusCounts.Preparing || 0,
+            data.statusCounts.Ready || 0,
+            data.statusCounts.Delivered || 0,
+            data.statusCounts.Cancelled || 0
+          ];
+          reportsChart.update();
+        }
+        // Update top items
+        var listEl = document.getElementById('reports-top-items');
+        if (data.topItems.length === 0) {
+          listEl.innerHTML = '<li class="py-4 text-sm text-gray-500 text-center">No data available</li>';
+        } else {
+          listEl.innerHTML = data.topItems.map(function(item, idx) {
+            return '<li class="py-4 flex justify-between"><div class="flex items-center"><span class="text-indigo-600 font-bold mr-3">#' + (idx + 1) + '</span><span class="font-medium text-gray-900">' + item.name + '</span></div><span class="text-sm border bg-gray-50 px-2 py-1 rounded-full">' + item.count + ' sold</span></li>';
+          }).join('');
+        }
+        if (loadingEl) loadingEl.classList.add('hidden');
+      })
+      .catch(function() { if (loadingEl) loadingEl.classList.add('hidden'); });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const canvas = document.getElementById('reportsStatusChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const statusCounts = JSON.parse(canvas.dataset.statusCounts || '{}');
+    
+    reportsChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Pending', 'Preparing', 'Ready', 'Delivered', 'Cancelled'],
+        datasets: [{
+          data: [
+            statusCounts.Pending || 0,
+            statusCounts.Preparing || 0,
+            statusCounts.Ready || 0,
+            statusCounts.Delivered || 0,
+            statusCounts.Cancelled || 0
+          ],
+          backgroundColor: ['#FCD34D', '#93C5FD', '#A78BFA', '#86EFAC', '#FCA5A5'],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'right' } }
+      }
+    });
+  });
+</script>

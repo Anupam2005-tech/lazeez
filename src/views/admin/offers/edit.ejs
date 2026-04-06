@@ -1,0 +1,47 @@
+<div class="max-w-xl">
+  <h2 class="text-xl font-bold text-gray-800 mb-6">Edit Offer</h2>
+
+  <form action="/admin/offers/edit/<%= offer.id %>" method="POST" enctype="multipart/form-data" class="space-y-5">
+    <div>
+      <label class="block text-sm font-semibold text-gray-700 mb-1">Offer Name *</label>
+      <input type="text" name="name" required value="<%= offer.name %>"
+             class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none">
+    </div>
+
+    <div>
+      <label class="block text-sm font-semibold text-gray-700 mb-1">Description</label>
+      <textarea name="description" rows="3"
+                class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none resize-none"><%= offer.description || '' %></textarea>
+    </div>
+
+    <div>
+      <label class="block text-sm font-semibold text-gray-700 mb-1">Dish Name Filter</label>
+      <input type="text" name="dishName" value="<%= offer.dishName || '' %>" placeholder="e.g. biryani (leave empty to show all menu items)"
+             class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 outline-none">
+      <p class="text-xs text-gray-400 mt-1">When a user clicks this offer, only menu items matching this name will be shown.</p>
+    </div>
+
+    <div>
+      <label class="block text-sm font-semibold text-gray-700 mb-1">Offer Image</label>
+      <% if (offer.image) { %>
+        <div class="mb-2">
+          <img src="<%= offer.image %>" class="w-32 h-20 object-cover rounded-lg border border-gray-200" alt="Current image">
+          <p class="text-xs text-gray-400 mt-1">Current image. Upload a new one to replace.</p>
+        </div>
+      <% } %>
+      <input type="file" name="image" accept="image/*"
+             class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100">
+      <p class="text-xs text-gray-400 mt-1">Any image format up to 10MB. Auto-compressed to AVIF.</p>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <input type="checkbox" name="active" id="active" <%= offer.active ? 'checked' : '' %> class="w-4 h-4 accent-orange-500">
+      <label for="active" class="text-sm font-semibold text-gray-700">Active (visible to users)</label>
+    </div>
+
+    <div class="flex gap-3 pt-2">
+      <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2.5 rounded-lg font-semibold text-sm transition-colors">Update Offer</button>
+      <a href="/admin/dashboard?tab=offers" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2.5 rounded-lg font-semibold text-sm transition-colors">Cancel</a>
+    </div>
+  </form>
+</div>

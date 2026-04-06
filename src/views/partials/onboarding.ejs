@@ -1,0 +1,315 @@
+<%
+  // Determine which profile fields are still missing
+  var onbUser = typeof user !== 'undefined' ? user : null;
+  var onbSteps = [];
+  if (onbUser) {
+    if (!onbUser.name) onbSteps.push('name');
+    if (!onbUser.phone) onbSteps.push('phone');
+    if (!onbUser.email) onbSteps.push('email');
+    if (!onbUser.address) onbSteps.push('address');
+  }
+  var showOnboarding = typeof _showOnboarding !== 'undefined' && _showOnboarding && onbSteps.length > 0;
+%>
+
+<% if (showOnboarding) { %>
+<div
+  x-data="onboardingWizard()"
+  x-show="open"
+  x-cloak
+  x-transition
+  class="fixed inset-0 z-[300] flex items-center justify-center"
+  id="onboarding-wizard"
+>
+  <!-- Backdrop -->
+  <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+
+  <!-- Modal Card -->
+  <div class="relative bg-white rounded-2xl shadow-2xl w-[92%] max-w-md mx-4 overflow-hidden" @click.stop>
+
+    <!-- Progress Bar -->
+    <div class="h-1.5 bg-gray-100">
+      <div class="h-full bg-gradient-to-r from-orange-400 to-orange-500 rounded-r-full transition-all duration-500 ease-out"
+           :style="'width:' + Math.round(((currentIdx + 1) / totalSteps) * 100) + '%'"></div>
+    </div>
+
+    <!-- Header -->
+    <div class="px-6 pt-5 pb-2 text-center">
+      <div class="w-14 h-14 mx-auto mb-3 rounded-full bg-orange-50 flex items-center justify-center">
+        <svg x-show="currentStep === 'name'" class="w-7 h-7 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
+        </svg>
+        <svg x-show="currentStep === 'phone'" class="w-7 h-7 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3"/>
+        </svg>
+        <svg x-show="currentStep === 'email'" class="w-7 h-7 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/>
+        </svg>
+        <svg x-show="currentStep === 'address'" class="w-7 h-7 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/>
+        </svg>
+      </div>
+
+      <p class="text-[11px] font-bold text-orange-500 uppercase tracking-wider mb-1">
+        Step <span x-text="currentIdx + 1"></span> of <span x-text="totalSteps"></span>
+      </p>
+      <h3 class="text-xl font-bold text-[#3d4152] mb-1" x-text="stepTitle"></h3>
+      <p class="text-[13px] text-[#7e808c]" x-text="stepSubtitle"></p>
+    </div>
+
+    <!-- Body: Input Fields -->
+    <div class="px-6 py-4">
+      <div x-show="error" class="mb-3 p-2.5 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600 font-medium" x-text="error"></div>
+
+      <!-- Name Step -->
+      <template x-if="currentStep === 'name'">
+        <div>
+          <label class="block text-xs font-semibold text-[#535665] mb-1.5">Full Name</label>
+          <input
+            type="text"
+            x-model="fields.name"
+            placeholder="e.g. Anupam Das"
+            @keydown.enter="next()"
+            class="w-full border border-[#d4d5d9] rounded-xl px-4 py-3 text-sm text-[#3d4152] placeholder:text-[#c0c2c9] focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 transition-all"
+            autofocus
+          >
+        </div>
+      </template>
+
+      <!-- Phone Step -->
+      <template x-if="currentStep === 'phone'">
+        <div>
+          <label class="block text-xs font-semibold text-[#535665] mb-1.5">Phone Number</label>
+          <div class="flex items-center border border-[#d4d5d9] rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-orange-500/30 focus-within:border-orange-500 transition-all">
+            <span class="px-3 py-3 bg-gray-50 text-sm font-semibold text-[#535665] border-r border-[#d4d5d9] select-none">+91</span>
+            <input
+              type="tel"
+              x-model="fields.phone"
+              placeholder="9876543210"
+              maxlength="10"
+              @keydown.enter="next()"
+              class="flex-1 px-3 py-3 text-sm text-[#3d4152] placeholder:text-[#c0c2c9] focus:outline-none"
+            >
+          </div>
+        </div>
+      </template>
+
+      <!-- Email Step -->
+      <template x-if="currentStep === 'email'">
+        <div>
+          <label class="block text-xs font-semibold text-[#535665] mb-1.5">Email Address</label>
+          <input
+            type="email"
+            x-model="fields.email"
+            placeholder="you@example.com"
+            @keydown.enter="next()"
+            class="w-full border border-[#d4d5d9] rounded-xl px-4 py-3 text-sm text-[#3d4152] placeholder:text-[#c0c2c9] focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 transition-all"
+          >
+        </div>
+      </template>
+
+      <!-- Address Step -->
+      <template x-if="currentStep === 'address'">
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs font-semibold text-[#535665] mb-1.5">Flat / House No.</label>
+            <input
+              type="text"
+              x-model="fields.flatNo"
+              placeholder="e.g. Flat 12B, Tower A"
+              class="w-full border border-[#d4d5d9] rounded-xl px-4 py-2.5 text-sm text-[#3d4152] placeholder:text-[#c0c2c9] focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 transition-all"
+            >
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#535665] mb-1.5">Full Address</label>
+            <input
+              type="text"
+              x-model="fields.address"
+              placeholder="Street, Area, City"
+              class="w-full border border-[#d4d5d9] rounded-xl px-4 py-2.5 text-sm text-[#3d4152] placeholder:text-[#c0c2c9] focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 transition-all"
+            >
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-[#535665] mb-1.5">Landmark</label>
+              <input
+                type="text"
+                x-model="fields.landmark"
+                placeholder="Near..."
+                class="w-full border border-[#d4d5d9] rounded-xl px-4 py-2.5 text-sm text-[#3d4152] placeholder:text-[#c0c2c9] focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 transition-all"
+              >
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-[#535665] mb-1.5">Pincode</label>
+              <input
+                type="text"
+                x-model="fields.pincode"
+                placeholder="799001"
+                maxlength="6"
+                @keydown.enter="next()"
+                class="w-full border border-[#d4d5d9] rounded-xl px-4 py-2.5 text-sm text-[#3d4152] placeholder:text-[#c0c2c9] focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 transition-all"
+              >
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <!-- Footer Buttons -->
+    <div class="px-6 pb-5 flex items-center justify-between gap-3">
+      <button
+        type="button"
+        @click="skip()"
+        class="text-[13px] font-semibold text-[#7e808c] hover:text-[#3d4152] transition-colors py-2 px-1"
+      >
+        <span x-text="currentIdx === totalSteps - 1 ? 'Skip & Finish' : 'Skip'"></span>
+      </button>
+
+      <button
+        type="button"
+        @click="next()"
+        :disabled="saving"
+        class="bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white font-bold py-3 px-8 rounded-xl text-sm transition-colors shadow-lg shadow-orange-200/50 flex items-center gap-2"
+      >
+        <span x-show="saving" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+        <span x-text="currentIdx === totalSteps - 1 ? 'Finish' : 'Continue'"></span>
+        <svg x-show="currentIdx < totalSteps - 1 && !saving" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+        </svg>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script id="onboarding-steps-data" type="application/json"><%- JSON.stringify(onbSteps) %></script>
+<script>
+function onboardingWizard() {
+  var steps = JSON.parse(document.getElementById('onboarding-steps-data').textContent);
+  var titles = {
+    name: "What's your name?",
+    phone: 'Your phone number',
+    email: 'Your email address',
+    address: 'Delivery address'
+  };
+  var subtitles = {
+    name: "So we know what to call you",
+    phone: "We'll send order updates here",
+    email: "For order confirmations & receipts",
+    address: "Where should we deliver your food?"
+  };
+
+  return {
+    open: true,
+    steps: steps,
+    currentIdx: 0,
+    saving: false,
+    error: '',
+    fields: {
+      name: '',
+      phone: '',
+      email: '',
+      flatNo: '',
+      address: '',
+      landmark: '',
+      pincode: ''
+    },
+
+    get totalSteps() { return this.steps.length; },
+    get currentStep() { return this.steps[this.currentIdx] || ''; },
+    get stepTitle() { return titles[this.currentStep] || ''; },
+    get stepSubtitle() { return subtitles[this.currentStep] || ''; },
+
+    validate: function() {
+      var step = this.currentStep;
+      if (step === 'name' && !this.fields.name.trim()) {
+        this.error = 'Please enter your name';
+        return false;
+      }
+      if (step === 'phone') {
+        var p = this.fields.phone.trim().replace(/\D/g, '');
+        if (!p || p.length !== 10) {
+          this.error = 'Please enter a valid 10-digit phone number';
+          return false;
+        }
+      }
+      if (step === 'email') {
+        var e = this.fields.email.trim();
+        if (!e || !e.includes('@') || !e.includes('.')) {
+          this.error = 'Please enter a valid email address';
+          return false;
+        }
+      }
+      if (step === 'address' && !this.fields.address.trim()) {
+        this.error = 'Please enter your delivery address';
+        return false;
+      }
+      this.error = '';
+      return true;
+    },
+
+    saveStep: async function() {
+      var step = this.currentStep;
+      var body = {};
+      if (step === 'name') body.name = this.fields.name.trim();
+      else if (step === 'phone') body.phone = this.fields.phone.trim();
+      else if (step === 'email') body.email = this.fields.email.trim();
+      else if (step === 'address') {
+        body.flatNo = this.fields.flatNo.trim();
+        body.address = this.fields.address.trim();
+        body.landmark = this.fields.landmark.trim();
+        body.pincode = this.fields.pincode.trim();
+      }
+
+      this.saving = true;
+      try {
+        var res = await fetch('/auth/profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        var data = await res.json();
+        if (!data.success) {
+          this.error = data.error || 'Failed to save. Please try again.';
+          return false;
+        }
+        return true;
+      } catch (err) {
+        this.error = 'Network error. Please try again.';
+        return false;
+      } finally {
+        this.saving = false;
+      }
+    },
+
+    next: async function() {
+      if (!this.validate()) return;
+      var saved = await this.saveStep();
+      if (!saved) return;
+
+      if (this.currentIdx < this.totalSteps - 1) {
+        this.currentIdx++;
+        this.error = '';
+      } else {
+        this.finish();
+      }
+    },
+
+    skip: function() {
+      if (this.currentIdx < this.totalSteps - 1) {
+        this.currentIdx++;
+        this.error = '';
+      } else {
+        this.finish();
+      }
+    },
+
+    finish: function() {
+      this.open = false;
+      // Mark onboarding as done in session so it won't show again
+      fetch('/auth/onboarding-done', { method: 'POST' }).catch(function() {});
+    }
+  };
+}
+</script>
+<% } %>

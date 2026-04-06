@@ -1,0 +1,89 @@
+<%- include('../partials/header') %>
+
+<div class="min-h-[80vh] flex flex-col items-center justify-center bg-white px-4">
+  
+  <a href="/" class="flex items-center gap-2 text-sm font-semibold text-[#686b78] hover:text-orange-500 transition-colors mb-10 group self-start sm:self-center max-w-[400px] w-full">
+    <svg class="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+    </svg>
+    Back to Home
+  </a>
+  
+  <div class="max-w-[400px] w-full">
+    
+    <div class="flex justify-between items-start mb-8">
+      <div>
+        <h2 class="text-3xl font-bold text-[#282c3f] tracking-tight">Sign up</h2>
+        <p class="text-[14px] text-[#282c3f] mt-2">
+          or <a href="/auth/login" class="text-orange-500 font-medium">login to your account</a>
+        </p>
+        <div class="w-8 h-[2px] bg-[#282c3f] mt-4"></div>
+      </div>
+      <!-- Decorative Placeholder -->
+      <div class="w-24 h-24 bg-orange-50 rounded-full flex items-center justify-center border-4 border-white shadow-sm">
+        <span class="text-orange-500 font-black text-4xl">R</span>
+      </div>
+    </div>
+
+    <form id="registerForm" class="space-y-0">
+      
+      <div class="relative border border-[#d4d5d9] rounded-none border-b-0 focus-within:border-black focus-within:z-10 bg-white">
+        <label class="absolute text-[12px] font-medium text-[#93959f] top-1 left-4">Name</label>
+        <input type="text" id="name" required class="w-full h-16 pt-5 px-4 outline-none text-[#282c3f] text-[15px] font-medium bg-transparent">
+      </div>
+
+      <div class="relative border border-[#d4d5d9] rounded-none border-b-0 focus-within:border-black focus-within:z-10 bg-white">
+        <label class="absolute text-[12px] font-medium text-[#93959f] top-1 left-4">Email</label>
+        <input type="email" id="email" required class="w-full h-16 pt-5 px-4 outline-none text-[#282c3f] text-[15px] font-medium bg-transparent">
+      </div>
+      
+      <div class="relative border border-[#d4d5d9] rounded-none focus-within:border-black focus-within:z-10 bg-white mb-6">
+        <label class="absolute text-[12px] font-medium text-[#93959f] top-1 left-4">Password</label>
+        <input type="password" id="password" required class="w-full h-16 pt-5 px-4 outline-none text-[#282c3f] text-[15px] tracking-wider font-medium bg-transparent">
+      </div>
+
+      <div class="text-[#fc8019] text-[13px] font-medium mt-6 mb-4">
+        Have a referral code?
+      </div>
+
+      <button type="submit" class="w-full bg-[#fc8019] text-white py-4 font-bold text-[14px] uppercase tracking-wider mb-4 hover:shadow-md transition-shadow">
+        Continue
+      </button>
+    </form>
+
+    <div class="mt-6 pt-6 border-t border-[#e9e9eb]">
+      <p class="text-[13px] text-center text-[#93959f] mb-4">Or sign up with</p>
+      <div class="grid grid-cols-2 gap-4">
+        <button onclick="RestoAuth.handleGoogleLogin()" class="flex items-center justify-center gap-2 w-full py-3 border border-[#d4d5d9] hover:bg-gray-50 transition-colors text-sm font-bold text-[#3d4152] uppercase">
+          Google
+        </button>
+        <button onclick="RestoAuth.showOtpModal()" class="flex items-center justify-center gap-2 w-full py-3 border border-[#d4d5d9] hover:bg-gray-50 transition-colors text-sm font-bold text-[#3d4152] uppercase">
+          Phone
+        </button>
+      </div>
+    </div>
+
+    <div class="text-[11px] text-[#686b78] mt-2 leading-relaxed">
+      By creating an account, I accept the 
+      <a href="#" class="font-bold text-[#282c3f]">Terms & Conditions</a> & 
+      <a href="#" class="font-bold text-[#282c3f]">Privacy Policy</a>
+    </div>
+    
+  </div>
+</div>
+
+<script>
+  document.getElementById('registerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const name = document.getElementById('name').value;
+    let recaptchaToken = '';
+    if (window.grecaptcha && window.RECAPTCHA_SITE_KEY) {
+      recaptchaToken = await grecaptcha.execute(window.RECAPTCHA_SITE_KEY, {action: 'register'});
+    }
+    RestoAuth.handleEmailRegister(email, password, name, '/auth/verify-token', recaptchaToken);
+  });
+</script>
+
+<%- include('../partials/footer') %>

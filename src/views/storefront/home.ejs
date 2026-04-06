@@ -1,0 +1,571 @@
+<%- include('../partials/header') %>
+
+<div class="max-w-[1200px] mx-auto px-4 sm:px-6 pt-10 pb-20">
+  
+  <!-- Swiggy "What's on your mind?" Carousel -->
+  <div class="mb-14 border-b border-[#f1f1f6] pb-10">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-extrabold text-[#3d4152] tracking-tight">What's on your mind?</h2>
+      
+      <!-- Navigation arrows -->
+      <div class="flex gap-2 text-gray-400">
+        <div class="w-9 h-9 rounded-full bg-[#e2e2e7] flex items-center justify-center hover:bg-[#d4d5d9] cursor-pointer transition-colors select-none"
+             onclick="document.getElementById('carousel-track').scrollBy({ left: -300, behavior: 'smooth' })">
+          <svg class="w-4 h-4 text-[#3d4152]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+        </div>
+        <div class="w-9 h-9 rounded-full bg-[#e2e2e7] flex items-center justify-center hover:bg-[#d4d5d9] cursor-pointer transition-colors select-none"
+             onclick="document.getElementById('carousel-track').scrollBy({ left: 300, behavior: 'smooth' })">
+          <svg class="w-4 h-4 text-[#3d4152]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+        </div>
+      </div>
+    </div>
+    
+    <div id="carousel-track" class="flex gap-6 overflow-x-hidden pb-4" style="scroll-behavior:smooth;">
+      <button data-action="filter-category" data-category-id="null" onclick="window.location.href='/'" class="flex flex-col items-center gap-2 group shrink-0 <%= currentCategory === null ? 'opacity-100' : 'opacity-60 hover:opacity-100' %>">
+        <div class="w-[124px] h-[124px] rounded-full bg-orange-100 flex items-center justify-center overflow-hidden shadow-sm <%= currentCategory === null ? 'border-[3px] border-orange-500' : '' %>">
+          <svg class="w-16 h-16 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+          </svg>
+        </div>
+        <span class="text-[#3d4152] font-semibold text-[15px] mt-1">All</span>
+      </button>
+
+      <% categories.forEach((cat, index) => { %>
+        <a href="/category/<%= cat.id %>" class="flex flex-col items-center gap-2 group shrink-0 opacity-60 hover:opacity-100">
+          <div class="w-[124px] h-[124px] rounded-full bg-gray-100 flex items-center justify-center overflow-hidden shadow-sm">
+            <% if (cat.image) { %>
+              <img src="<%= cat.image %>" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+            <% } else { %>
+              <div class="w-full h-full bg-orange-50 flex items-center justify-center group-hover:bg-orange-100 transition-colors">
+                <span class="text-orange-400 font-bold text-3xl opacity-60"><%= cat.name.charAt(0) %></span>
+              </div>
+            <% } %>
+          </div>
+          <span class="text-[#3d4152] font-semibold text-[15px] mt-1"><%= cat.name %></span>
+        </a>
+      <% }) %>
+    </div>
+  </div>
+
+  <!-- Diet / Best Seller Toggle (AJAX) -->
+  <div id="food-type-filters" class="flex items-center gap-3 overflow-x-auto pb-6 border-b border-[#f1f1f6] custom-scroll mb-10">
+    <button data-action="filter-food-type" data-type="all"
+       class="food-type-btn border border-subtle rounded-full px-4 py-1.5 text-sm font-semibold whitespace-nowrap <%= currentFoodType === 'all' ? 'bg-[#3d4152] text-white border-[#3d4152]' : 'text-[#3d4152] bg-white hover:bg-gray-50' %>">
+      All
+    </button>
+    <button data-action="filter-food-type" data-type="veg"
+       class="food-type-btn border border-subtle rounded-full px-4 py-1.5 text-sm font-semibold whitespace-nowrap <%= currentFoodType === 'veg' ? 'bg-[#3d4152] text-white border-[#3d4152]' : 'text-[#3d4152] bg-white hover:bg-gray-50' %>">
+      Veg
+    </button>
+    <button data-action="filter-food-type" data-type="nonveg"
+       class="food-type-btn border border-subtle rounded-full px-4 py-1.5 text-sm font-semibold whitespace-nowrap <%= currentFoodType === 'nonveg' ? 'bg-[#3d4152] text-white border-[#3d4152]' : 'text-[#3d4152] bg-white hover:bg-gray-50' %>">
+      Non-Veg
+    </button>
+    <button data-action="filter-food-type" data-type="bestseller"
+       class="food-type-btn border border-subtle rounded-full px-4 py-1.5 text-sm font-semibold whitespace-nowrap <%= currentFoodType === 'bestseller' ? 'bg-[#3d4152] text-white border-[#3d4152]' : 'text-[#3d4152] bg-white hover:bg-gray-50' %>">
+      Best Seller
+    </button>
+  </div>
+
+  <!-- Best Sellers Section -->
+  <% const bestSellers = menuItems.filter(i => i.isBestSeller && i.available); %>
+  <% if (bestSellers.length > 0 && (!currentFoodType || currentFoodType === 'all') && !currentCategory && !searchQuery) { %>
+    <div id="best-sellers-section" class="mb-14">
+      <h2 class="text-2xl font-extrabold text-[#3d4152] tracking-tight mb-8">Best Sellers</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
+        <% bestSellers.slice(0, 4).forEach(item => { %>
+          <div class="group">
+            <div class="relative">
+              <a href="/item/<%= item.uid %>" class="block">
+                <div class="relative w-full aspect-[4/3] rounded-[16px] overflow-hidden mb-3 bg-gray-100 shadow-sm cursor-pointer">
+                  <% if (item.image) { %>
+                    <img src="<%= item.image %>" class="w-full h-full object-cover" loading="lazy">
+                  <% } else { %>
+                    <div class="w-full h-full bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
+                      <svg class="w-16 h-16 text-orange-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    </div>
+                  <% } %>
+                  <div class="absolute top-2 left-2 z-20">
+                    <span class="text-[10px] font-bold text-white bg-orange-500 px-2 py-1 rounded-full">BEST SELLER</span>
+                  </div>
+                </div>
+              </a>
+              <div class="absolute bottom-3 right-3 z-30 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300">
+                <div data-menu-item-id="<%= item.id %>">
+                  <button type="button" class="btn-add px-6 py-1.5 flex items-center justify-center" data-action="add-to-cart" data-item-id="<%= item.id %>">ADD<span class="ml-0.5 text-[10px]">+</span></button>
+                </div>
+              </div>
+            </div>
+            <a href="/item/<%= item.uid %>" class="block">
+              <div class="px-1 cursor-pointer">
+                <h3 class="text-[17px] font-bold text-[#3d4152] truncate mb-0.5" title="<%= item.name %>"><%= item.name %></h3>
+                <div class="flex items-center gap-1 text-[15px] font-semibold text-[#3d4152] mb-1">
+                  <svg class="w-5 h-5 text-white bg-green-600 rounded-full p-0.5" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                  <span><%= itemRatings[item.id] || '—' %></span>
+                  <span class="text-gray-500 font-bold mx-1.5">&bull;</span>
+                  <span>₹<%= item.price %></span>
+                </div>
+                <div class="text-[14px] text-[#686b78] line-clamp-1 font-medium"><%= item.description || 'Deliciously prepared for you.' %></div>
+              </div>
+            </a>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  <% } %>
+
+  <!-- Delicious dishes for you -->
+  <div class="mb-12">
+    <h2 id="items-section-header" class="text-2xl font-extrabold text-[#3d4152] tracking-tight mb-8">
+      <%= searchQuery ? 'Search results for "' + searchQuery + '"' : (currentCategory ? categories.find(c => c.id === currentCategory)?.name : 'Delicious dishes for you') %>
+      <% if (currentFoodType && currentFoodType !== 'all') { %>
+        <span class="text-[#7e808c] text-[18px] font-bold"> · <%= currentFoodType === 'veg' ? 'Veg' : (currentFoodType === 'nonveg' ? 'Non-Veg' : 'Best Seller') %></span>
+      <% } %>
+    </h2>
+
+    <!-- Menu Modal (Alpine.js) -->
+    <div
+      x-data="menuModal()"
+      class="relative"
+    >
+      <button
+        type="button"
+        @click="window.innerWidth < 640 ? window.location.href='/menu' : open()"
+        class="fixed left-4 bottom-4 z-[65] w-14 h-14 rounded-full bg-slate-900/95 text-white shadow-xl hover:bg-slate-800 transition-colors flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-white/30 sm:flex"
+        aria-label="Open menu"
+      >
+        <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3.5 6.8C3.5 5.8 4.3 5 5.3 5H10c1.1 0 2 .9 2 2v14c0-1-1.6-1.8-4-1.8S3.5 20 3.5 21V6.8Z"/>
+          <path d="M20.5 6.8c0-1-.8-1.8-1.8-1.8H14c-1.1 0-2 .9-2 2v14c0-1 1.6-1.8 4-1.8s4.5.8 4.5 1.8V6.8Z"/>
+          <path d="M12 7v14"/>
+        </svg>
+      </button>
+
+      <div
+        x-show="isOpen"
+        x-cloak
+        x-transition.opacity
+        class="fixed inset-0 z-[70] items-center justify-center hidden sm:flex"
+        role="dialog"
+        aria-modal="true"
+        @keydown.escape.window="close()"
+      >
+        <div class="absolute inset-0 bg-black/30 backdrop-blur-md" @click="close()"></div>
+
+        <div
+          class="relative w-full max-w-[700px] mx-4 bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/40 overflow-hidden"
+          @click.stop
+        >
+          <div class="px-5 py-4 border-b border-[#e9e9eb] flex items-center justify-between gap-4">
+            <div class="min-w-0">
+              <h3 class="text-lg font-bold text-[#3d4152] leading-tight">Menu</h3>
+              <p class="text-xs text-[#7e808c] mt-0.5">Filter & browse items</p>
+            </div>
+
+            <button
+              type="button"
+              @click="close()"
+              class="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-colors"
+              aria-label="Close menu"
+            >
+              <svg class="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Dual filter dropdowns -->
+          <div class="px-5 py-3 border-b border-[#e9e9eb] flex items-center gap-3">
+            <div class="flex-1">
+              <label class="text-[10px] font-bold text-[#7e808c] uppercase tracking-wider block mb-1">Food Type</label>
+              <select
+                x-model="foodType"
+                class="w-full bg-white border border-[#e9e9eb] rounded-lg px-3 py-1.5 text-xs font-semibold text-[#3d4152] outline-none focus:ring-2 focus:ring-orange-500/30"
+              >
+                <option value="all">All</option>
+                <option value="veg">Veg</option>
+                <option value="nonveg">Non-Veg</option>
+              </select>
+            </div>
+            <div class="flex-1">
+              <label class="text-[10px] font-bold text-[#7e808c] uppercase tracking-wider block mb-1">Category</label>
+              <select
+                x-model="categoryId"
+                class="w-full bg-white border border-[#e9e9eb] rounded-lg px-3 py-1.5 text-xs font-semibold text-[#3d4152] outline-none focus:ring-2 focus:ring-orange-500/30"
+              >
+                <option value="">All Categories</option>
+                <% categories.forEach(function(cat) { %>
+                  <option value="<%= cat.id %>"><%= cat.name %></option>
+                <% }) %>
+              </select>
+            </div>
+          </div>
+
+          <div class="max-h-[55vh] overflow-y-auto p-4">
+            <div x-show="items.length === 0" class="py-10 text-center text-gray-500 font-bold">
+              No items found.
+            </div>
+            <div x-show="items.length > 0" class="space-y-3">
+              <template x-for="item in items" :key="item.id">
+                <a :href="'/item/' + item.uid" class="flex items-start justify-between gap-3 border border-[#e9e9eb] rounded-xl p-3">
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-2">
+                       <template x-if="!['beverage', 'tea', 'coffee', 'juice', 'shake', 'drink', 'liquid'].some(k => (item.categoryName || '').toLowerCase().includes(k))">
+                        <span class="w-2.5 h-2.5 rounded-full" :class="item.isVeg ? 'bg-green-600' : 'bg-red-600'"></span>
+                      </template>
+                      <p class="font-bold text-[13px] text-[#3d4152] truncate" :title="item.name" x-text="item.name"></p>
+                    </div>
+                    <p class="text-[12px] text-[#7e808c] mt-0.5">&#8377;<span x-text="item.price"></span></p>
+                    <p class="text-[10px] text-[#93959f] mt-0.5" x-text="item.categoryName"></p>
+                    <span x-show="item.isBestSeller" class="inline-block mt-1 text-[10px] font-bold text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full">BEST</span>
+                  </div>
+
+                  <div class="shrink-0">
+                    <template x-if="item.available">
+                      <button
+                        type="button"
+                        class="btn-add px-3 py-1 text-xs font-bold rounded-lg"
+                        @click.prevent.stop="RestoCart.add(String(item.id))"
+                      >ADD<span class="ml-0.5 text-[10px]">+</span></button>
+                    </template>
+                    <template x-if="!item.available">
+                      <button
+                        disabled
+                        class="px-3 py-1 text-xs font-bold rounded-lg bg-gray-100 text-gray-400 border border-gray-200"
+                      >Unavailable</button>
+                    </template>
+                  </div>
+                </a>
+              </template>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="items-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
+      <% if (menuItems.length === 0) { %>
+        <div class="col-span-full py-12 text-center text-gray-500 font-bold">
+          No dishes found in this category.
+        </div>
+      <% } %>
+
+      <% menuItems.forEach((item, index) => { %>
+        <div class="group menu-item-card <%= index >= 8 ? 'hidden' : '' %>" data-index="<%= index %>">
+          <!-- Image section -->
+          <div class="relative">
+            <a href="/item/<%= item.uid %>" class="block">
+              <div class="relative w-full aspect-[4/3] rounded-[16px] overflow-hidden mb-3 bg-gray-100 shadow-sm cursor-pointer <%= !item.available ? 'grayscale opacity-60' : '' %>">
+                <% if (item.image) { %>
+                  <img src="<%= item.image %>" class="w-full h-full object-cover" loading="lazy">
+                <% } else { %>
+                  <div class="w-full h-full bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
+                    <svg class="w-16 h-16 text-orange-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                  </div>
+                <% } %>
+                
+                <!-- Gradient Overlay -->
+                <div class="absolute inset-0 bg-gradient-to-t from-[#1b1e24]/60 via-transparent to-transparent z-10 w-full h-full pointer-events-none"></div>
+                
+                <% if (!item.available) { %>
+                  <div class="absolute inset-0 z-20 flex items-center justify-center">
+                    <span class="bg-black/70 text-white font-bold text-sm px-4 py-2 rounded-lg uppercase tracking-wider">Unavailable</span>
+                  </div>
+                <% } %>
+                <% if (item.isBestSeller) { %>
+                  <div class="absolute top-2 left-2 z-20">
+                    <span class="text-[10px] font-bold text-white bg-orange-500 px-2 py-1 rounded-full">BEST SELLER</span>
+                  </div>
+                <% } %>
+              </div>
+            </a>
+
+            <% if (item.available) { %>
+              <div class="absolute bottom-3 right-3 z-30 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300">
+                <div data-menu-item-id="<%= item.id %>">
+                  <button type="button" class="btn-add px-6 py-1.5 flex items-center justify-center" data-action="add-to-cart" data-item-id="<%= item.id %>">ADD<span class="ml-0.5 text-[10px]">+</span></button>
+                </div>
+              </div>
+            <% } %>
+          </div>
+
+          <!-- Text Details -->
+          <a href="/item/<%= item.uid %>" class="block">
+            <div class="px-1 cursor-pointer">
+              <h3 class="text-[17px] font-bold text-[#3d4152] truncate mb-0.5" title="<%= item.name %>"><%= item.name %></h3>
+
+              <div class="flex items-center gap-2 mb-1">
+                <% 
+                  const liquidKeywords = ['beverage', 'tea', 'coffee', 'juice', 'shake', 'drink', 'liquid'];
+                  const itemCatName = item.category?.name || item.categoryName || '';
+                  const isItemLiquid = liquidKeywords.some(k => itemCatName.toLowerCase().includes(k));
+                %>
+                <% if (!isItemLiquid) { %>
+                  <% if (item.isVeg) { %>
+                    <span class="text-[11px] font-bold text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">VEG</span>
+                  <% } else { %>
+                    <span class="text-[11px] font-bold text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">NON-VEG</span>
+                  <% } %>
+                <% } %>
+              </div>
+              
+              <div class="flex items-center gap-1 text-[15px] font-semibold text-[#3d4152] mb-1">
+                <svg class="w-5 h-5 text-white bg-green-600 rounded-full p-0.5" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+                <span><%= itemRatings[item.id] || '—' %></span>
+                <span class="text-gray-500 font-bold mx-1.5">&bull;</span>
+                <span>₹<%= item.price %></span>
+              </div>
+              
+              <div class="text-[14px] text-[#686b78] line-clamp-1 font-medium">
+                <%= item.description || 'Deliciously prepared for you.' %>
+              </div>
+            </div>
+          </a>
+        </div>
+      <% }) %>
+    </div>
+
+    <!-- Load More indicator -->
+    <div id="load-more-sentinel" class="py-8 text-center <%= menuItems.length <= 8 ? 'hidden' : '' %>">
+      <div class="inline-flex items-center gap-2 text-gray-400 text-sm">
+        <svg class="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4m-7.07-3.93l2.83-2.83m8.48-8.48l2.83-2.83M2 12h4m12 0h4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83"/></svg>
+        Loading more dishes...
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script id="resto-items-data" type="application/json"><%- allItemsJSON %></script>
+<script id="resto-categories-data" type="application/json"><%- JSON.stringify(categories) %></script>
+<script id="resto-food-type" type="application/json">"<%= currentFoodType || 'all' %>"</script>
+<script id="resto-category" type="application/json"><%= currentCategory || 'null' %></script>
+
+<script>
+var __RESTO_ITEMS__ = JSON.parse(document.getElementById('resto-items-data').textContent);
+var __RESTO_CATEGORIES__ = JSON.parse(document.getElementById('resto-categories-data').textContent);
+var __CURRENT_FOOD_TYPE__ = JSON.parse(document.getElementById('resto-food-type').textContent);
+var __CURRENT_CATEGORY__ = JSON.parse(document.getElementById('resto-category').textContent);
+
+var LIQUID_KEYWORDS = ['beverage', 'tea', 'coffee', 'juice', 'shake', 'drink', 'liquid'];
+function isLiquid(catName) {
+  if (!catName) return false;
+  return LIQUID_KEYWORDS.some(function(k) { return catName.toLowerCase().includes(k); });
+}
+
+// ===== AJAX Filter Functions =====
+function filterByFoodType(type) {
+  __CURRENT_FOOD_TYPE__ = type;
+  __CURRENT_CATEGORY__ = null;
+  updateFilterButtons();
+  loadFilteredItems();
+  history.pushState({ foodType: type, category: null }, '', '/?foodType=' + type);
+}
+
+function filterByCategory(catId) {
+  __CURRENT_CATEGORY__ = catId;
+  __CURRENT_FOOD_TYPE__ = 'all';
+  updateFilterButtons();
+  loadFilteredItems();
+  var url = catId ? '/category/' + catId : '/';
+  history.pushState({ foodType: 'all', category: catId }, '', url);
+}
+
+function updateFilterButtons() {
+  document.querySelectorAll('.food-type-btn').forEach(function(btn) {
+    var isActive = btn.dataset.type === __CURRENT_FOOD_TYPE__;
+    btn.className = 'food-type-btn border border-subtle rounded-full px-4 py-1.5 text-sm font-semibold whitespace-nowrap ' +
+      (isActive ? 'bg-[#3d4152] text-white border-[#3d4152]' : 'text-[#3d4152] bg-white hover:bg-gray-50');
+  });
+  // Update section header
+  var headerEl = document.getElementById('items-section-header');
+  if (headerEl) {
+    var catName = '';
+    if (__CURRENT_CATEGORY__) {
+      var cat = __RESTO_CATEGORIES__.find(function(c) { return c.id === __CURRENT_CATEGORY__; });
+      catName = cat ? cat.name : '';
+    }
+    var typeLabel = '';
+    if (__CURRENT_FOOD_TYPE__ && __CURRENT_FOOD_TYPE__ !== 'all') {
+      typeLabel = ' · ' + (__CURRENT_FOOD_TYPE__ === 'veg' ? 'Veg' : (__CURRENT_FOOD_TYPE__ === 'nonveg' ? 'Non-Veg' : 'Best Seller'));
+    }
+    headerEl.innerHTML = (catName || 'Delicious dishes for you') + (typeLabel ? '<span class="text-[#7e808c] text-[18px] font-bold">' + typeLabel + '</span>' : '');
+  }
+}
+
+function loadFilteredItems() {
+  var grid = document.getElementById('items-grid');
+  if (!grid) return;
+  grid.innerHTML = '<div class="col-span-full py-12 text-center"><svg class="w-8 h-8 animate-spin mx-auto text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4m-7.07-3.93l2.83-2.83m8.48-8.48l2.83-2.83M2 12h4m12 0h4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83"/></svg></div>';
+
+  var params = new URLSearchParams();
+  if (__CURRENT_FOOD_TYPE__ && __CURRENT_FOOD_TYPE__ !== 'all') params.set('foodType', __CURRENT_FOOD_TYPE__);
+  if (__CURRENT_CATEGORY__) params.set('category', __CURRENT_CATEGORY__);
+
+  fetch('/api/menu-items?' + params.toString())
+    .then(function(r) { return r.json(); })
+    .then(function(items) {
+      grid.innerHTML = renderItemsGrid(items);
+      // Re-initialize lazy loading for the new grid of items
+      if (typeof initLazyLoading === 'function') initLazyLoading();
+      
+      // Re-init cart controls
+      if (window.RestoCart) window.RestoCart.renderAll();
+      // Hide best sellers section when filtering
+      var bs = document.getElementById('best-sellers-section');
+      if (bs) bs.style.display = (__CURRENT_FOOD_TYPE__ === 'all' && !__CURRENT_CATEGORY__) ? '' : 'none';
+      // Show/hide load more sentinel
+      var sentinel = document.getElementById('load-more-sentinel');
+      if (sentinel) {
+        if (items.length > 8) sentinel.classList.remove('hidden');
+        else sentinel.classList.add('hidden');
+      }
+    })
+    .catch(function() {
+      grid.innerHTML = '<div class="col-span-full py-12 text-center text-gray-500 font-bold">Failed to load items.</div>';
+    });
+}
+
+function renderItemsGrid(items) {
+  if (items.length === 0) {
+    return '<div class="col-span-full py-12 text-center text-gray-500 font-bold">No dishes found.</div>';
+  }
+  return items.map(function(item, index) {
+    var imgHtml = item.image
+      ? '<img src="' + item.image + '" class="w-full h-full object-cover" loading="lazy">'
+      : '<div class="w-full h-full bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center"><svg class="w-16 h-16 text-orange-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></div>';
+    var grayscale = !item.available ? 'grayscale opacity-60' : '';
+    var unavailableBadge = !item.available ? '<div class="absolute inset-0 z-20 flex items-center justify-center"><span class="bg-black/70 text-white font-bold text-sm px-4 py-2 rounded-lg uppercase tracking-wider">Unavailable</span></div>' : '';
+    var addBtn = item.available
+      ? '<div class="absolute bottom-3 right-3 z-30 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300"><div data-menu-item-id="' + item.id + '"><button type="button" class="btn-add px-6 py-1.5 flex items-center justify-center" data-action="add-to-cart" data-item-id="' + item.id + '">ADD<span class="ml-0.5 text-[10px]">+</span></button></div></div>'
+      : '';
+    var vegBadge = isLiquid(item.categoryName || item.category) 
+      ? '' 
+      : (item.isVeg
+          ? '<span class="text-[11px] font-bold text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">VEG</span>'
+          : '<span class="text-[11px] font-bold text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">NON-VEG</span>');
+    var bestBadge = item.isBestSeller ? '<div class="absolute top-2 left-2 z-20"><span class="text-[10px] font-bold text-white bg-orange-500 px-2 py-1 rounded-full">BEST SELLER</span></div>' : '';
+    var displayClass = index >= 8 ? 'hidden' : '';
+    var ratingDisplay = item.avgRating > 0 ? item.avgRating : '&#8212;';
+
+    return '<div class="group menu-item-card ' + displayClass + '" data-index="' + index + '"><div class="relative"><a href="/item/' + item.uid + '" class="block"><div class="relative w-full aspect-[4/3] rounded-[16px] overflow-hidden mb-3 bg-gray-100 shadow-sm cursor-pointer ' + grayscale + '">' + imgHtml + '<div class="absolute inset-0 bg-gradient-to-t from-[#1b1e24]/60 via-transparent to-transparent z-10 w-full h-full pointer-events-none"></div>' + unavailableBadge + bestBadge + '</div></a>' + addBtn + '</div><a href="/item/' + item.uid + '" class="block"><div class="px-1 cursor-pointer"><h3 class="text-[17px] font-bold text-[#3d4152] truncate mb-0.5" title="' + item.name + '">' + item.name + '</h3><div class="flex items-center gap-2 mb-1">' + vegBadge + '</div><div class="flex items-center gap-1 text-[15px] font-semibold text-[#3d4152] mb-1"><svg class="w-5 h-5 text-white bg-green-600 rounded-full p-0.5" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg><span>' + ratingDisplay + '</span><span class="text-gray-500 font-bold mx-1.5">&bull;</span><span>₹' + item.price + '</span></div><div class="text-[14px] text-[#686b78] line-clamp-1 font-medium">' + (item.description || 'Deliciously prepared for you.') + '</div></div></a></div>';
+  }).join('');
+}
+
+// Handle browser back/forward
+window.addEventListener('popstate', function(e) {
+  if (e.state) {
+    __CURRENT_FOOD_TYPE__ = e.state.foodType || 'all';
+    __CURRENT_CATEGORY__ = e.state.category || null;
+    updateFilterButtons();
+    loadFilteredItems();
+  }
+});
+
+// ===== Lazy loading =====
+var __LAZY_OBSERVER__ = null;
+function initLazyLoading() {
+  var batchSize = 8;
+  var shown = 8;
+  var cards = document.querySelectorAll('.menu-item-card');
+  var sentinel = document.getElementById('load-more-sentinel');
+  
+  if (!sentinel) return;
+  
+  // Disconnect previous observer if any
+  if (__LAZY_OBSERVER__) {
+    __LAZY_OBSERVER__.disconnect();
+    __LAZY_OBSERVER__ = null;
+  }
+
+  if (cards.length <= batchSize) {
+    sentinel.classList.add('hidden');
+    return;
+  }
+  
+  sentinel.classList.remove('hidden');
+  
+  __LAZY_OBSERVER__ = new IntersectionObserver(function(entries) {
+    if (entries[0].isIntersecting && shown < cards.length) {
+      var end = Math.min(shown + batchSize, cards.length);
+      for (var i = shown; i < end; i++) {
+        if (cards[i]) {
+          cards[i].classList.remove('hidden');
+          cards[i].style.opacity = '0';
+          cards[i].style.transform = 'translateY(20px)';
+          (function(card) {
+            setTimeout(function() {
+              card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+              card.style.opacity = '1';
+              card.style.transform = 'translateY(0)';
+            }, 50);
+          })(cards[i]);
+        }
+      }
+      shown = end;
+      if (shown >= cards.length) {
+        sentinel.classList.add('hidden');
+        __LAZY_OBSERVER__.disconnect();
+        __LAZY_OBSERVER__ = null;
+      }
+    }
+  }, { rootMargin: '200px' });
+  
+  __LAZY_OBSERVER__.observe(sentinel);
+}
+
+// Initial call
+document.addEventListener('DOMContentLoaded', initLazyLoading);
+
+function menuModal() {
+  return {
+    isOpen: false,
+    foodType: 'all',
+    categoryId: '',
+    
+    get items() {
+      var list = __RESTO_ITEMS__;
+      var self = this;
+      if (self.foodType === 'veg') list = list.filter(function(i) { return i.isVeg; });
+      else if (self.foodType === 'nonveg') list = list.filter(function(i) { return !i.isVeg; });
+      if (self.categoryId) list = list.filter(function(i) { return i.categoryId === self.categoryId; });
+      return list;
+    },
+    
+    open: function() {
+      this.isOpen = true;
+      document.body.style.overflow = 'hidden';
+    },
+    
+    close: function() {
+      this.isOpen = false;
+      document.body.style.overflow = '';
+    }
+  };
+}
+
+// Global click delegation for category and food type filters, and add-to-cart buttons
+document.addEventListener('click', function(e) {
+  var target = e.target.closest('[data-action]');
+  if (!target) return;
+
+  var action = target.getAttribute('data-action');
+  
+  if (action === 'filter-category') {
+    var catId = target.getAttribute('data-category-id');
+    filterByCategory(catId === 'null' ? null : catId);
+  } else if (action === 'filter-food-type') {
+    var type = target.getAttribute('data-type');
+    filterByFoodType(type);
+  } else if (action === 'add-to-cart') {
+    var itemId = target.getAttribute('data-item-id');
+    if (window.RestoCart) window.RestoCart.add(itemId);
+  }
+});
+</script>
+
+<%- include('../partials/footer') %>

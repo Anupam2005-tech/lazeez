@@ -1,0 +1,27 @@
+<% 
+  const text = locals.loadingText || 'Loading...';
+  const customClass = locals.className || '';
+%>
+
+<div aria-label="<%= text %>" role="status" class="loader <%= customClass %>">
+  <style>
+    .loader { display: flex; align-items: center; }
+    .icon { height: 1.5rem; width: 1.5rem; animation: spin 1s linear infinite; stroke: rgba(107, 114, 128, 1); }
+    .loading-text { font-size: 0.75rem; line-height: 1rem; font-weight: 500; color: rgba(107, 114, 128, 1); margin-left: 8px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+  
+  <svg class="icon" viewBox="0 0 256 256">
+    <% const lines = [
+      {x1:128, y1:32, x2:128, y2:64}, {x1:195.9, y1:60.1, x2:173.3, y2:82.7},
+      {x1:224, y1:128, x2:192, y2:128}, {x1:195.9, y1:195.9, x2:173.3, y2:173.3},
+      {x1:128, y1:224, x2:128, y2:192}, {x1:60.1, y1:195.9, x2:82.7, y2:173.3},
+      {x1:32, y1:128, x2:64, y2:128}, {x1:60.1, y1:60.1, x2:82.7, y2:82.7}
+    ]; %>
+    <% lines.forEach(line => { %>
+      <line x1="<%= line.x1 %>" y1="<%= line.y1 %>" x2="<%= line.x2 %>" y2="<%= line.y2 %>" 
+            stroke-linecap="round" stroke-linejoin="round" stroke-width="24"></line>
+    <% }); %>
+  </svg>
+  <span class="loading-text"><%= text %></span>
+</div>

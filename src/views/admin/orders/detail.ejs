@@ -1,0 +1,318 @@
+<div class="max-w-5xl mx-auto">
+  <div class="mb-6 flex items-center justify-between">
+    <h2 class="text-2xl font-bold text-gray-800">Order #<%= order.id %></h2>
+    <a href="/admin/orders" class="text-indigo-600 hover:text-indigo-900 font-medium text-sm">&larr; Back to Orders</a>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    
+    <!-- Order Details & Items -->
+    <div class="lg:col-span-2 space-y-6">
+      <div class="bg-white shadow sm:rounded-lg border p-6">
+        <h3 class="text-lg font-medium text-gray-900 border-b pb-3 mb-4">Items Ordered</h3>
+        <ul role="list" class="divide-y divide-gray-200">
+          <% order.items.forEach(item => { %>
+            <li class="py-3 flex justify-between text-sm">
+              <div class="flex items-center">
+                <span class="font-bold text-gray-900 w-8"><%= item.quantity %>x</span>
+                <span class="text-gray-700 font-medium"><%= item.menuItem ? item.menuItem.name : 'Unknown Item' %></span>
+              </div>
+              <span class="text-gray-900 font-medium">₹<%= (item.unitPrice * item.quantity).toFixed(2) %></span>
+            </li>
+          <% }) %>
+        </ul>
+        <div class="border-t mt-4 pt-4 space-y-2">
+          <div class="flex justify-between text-sm text-gray-600">
+            <span>Item Total</span>
+            <span>₹<%= order.itemTotal.toFixed(2) %></span>
+          </div>
+          <div class="flex justify-between text-sm text-gray-600">
+            <span>Delivery Fee</span>
+            <span>₹<%= order.deliveryFee.toFixed(2) %></span>
+          </div>
+          <div class="flex justify-between text-sm text-gray-500 italic">
+            <span>Platform Fee</span>
+            <span>₹<%= order.platformFee.toFixed(2) %></span>
+          </div>
+          <div class="flex justify-between items-center text-lg pt-2 border-t border-dashed">
+            <span class="font-bold text-gray-900">Total</span>
+            <span class="font-bold text-indigo-600">₹<%= order.totalAmount.toFixed(2) %></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order Info & Actions -->
+    <div class="space-y-6">
+      
+      <!-- Customer Info with Map -->
+      <div class="bg-white shadow sm:rounded-lg border p-6">
+        <h3 class="text-lg font-medium text-gray-900 border-b pb-3 mb-4">Customer Info</h3>
+        <div class="text-sm text-gray-600 space-y-2">
+          <p><span class="font-medium text-gray-900">Name:</span> <%= order.customerName || order.user.name || 'N/A' %></p>
+          <p><span class="font-medium text-gray-900">Email:</span> <%= order.user.email || 'N/A' %></p>
+          <p><span class="font-medium text-gray-900">Phone:</span> <%= order.customerPhone || order.user.phone || 'N/A' %></p>
+          <p><span class="font-medium text-gray-900">Type:</span> <%= order.dineIn ? 'Dine-in' : 'Delivery' %></p>
+          <% if (!order.dineIn) { %>
+            <div class="mt-2">
+              <p class="font-medium text-gray-900 mb-1">Delivery Address:</p>
+              <div class="bg-gray-50 rounded-lg p-3 text-sm space-y-1">
+                <% if (order.user.flatNo) { %><p><span class="text-gray-500">Flat/House:</span> <%= order.user.flatNo %></p><% } %>
+                <% if (order.address) { %><p><span class="text-gray-500">Address:</span> <%= order.address %></p><% } %>
+                <% if (order.user.landmark) { %><p><span class="text-gray-500">Landmark:</span> <%= order.user.landmark %></p><% } %>
+                <% if (order.user.pincode) { %><p><span class="text-gray-500">Pincode:</span> <%= order.user.pincode %></p><% } %>
+              </div>
+              <% if (order.user.lat && order.user.lng) { %>
+                <div id="order-map" class="w-full h-[200px] rounded-lg border border-gray-200 mt-3 z-10"></div>
+                <p class="text-[11px] text-gray-400 mt-1">Customer pinned location</p>
+<% } %>
+
+<script id="current-order-id-data" type="application/json"><%- JSON.stringify(order.id) %></script>
+<script>
+(function() {
+  var currentOrderId = JSON.parse(document.getElementById('current-order-id-data').textContent);
+
+  function showNotification(msg) {
+    var n = document.createElement('div');
+    n.className = 'fixed top-4 right-4 z-[9999] bg-gray-900 text-white px-4 py-3 rounded-lg shadow-lg text-sm font-medium';
+    n.textContent = msg;
+    document.body.appendChild(n);
+    setTimeout(function() { n.style.opacity = '0'; setTimeout(function() { n.remove(); }, 300); }, 4000);
+  }
+
+  function init() {
+    if (!window.RestoRealtime) { setTimeout(init, 500); return; }
+    window.RestoRealtime.on('order:cancel', function(data) {
+      if (data.orderId === currentOrderId) {
+        showNotification('Order #' + currentOrderId + ' was cancelled by customer');
+        setTimeout(function() { location.reload(); }, 1500);
+      }
+    });
+    window.RestoRealtime.on('order:status', function(data) {
+      if (data.orderId === currentOrderId) {
+        showNotification('Order #' + currentOrderId + ' status: ' + data.status);
+        setTimeout(function() { location.reload(); }, 1500);
+      }
+    });
+  }
+  init();
+})();
+
+// Admin AJAX actions
+async function adminUpdateStatus(orderId) {
+  var select = document.getElementById('status-select');
+  var btn = document.getElementById('update-status-btn');
+  var status = select.value;
+  btn.disabled = true;
+  btn.textContent = 'Updating...';
+  try {
+    var res = await fetch('/admin/orders/' + orderId + '/status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      body: JSON.stringify({ status: status })
+    });
+    var data = await res.json();
+    if (data.success) {
+      document.getElementById('current-status-text').textContent = status;
+      btn.textContent = 'Updated!';
+      btn.classList.remove('bg-indigo-600');
+      btn.classList.add('bg-green-600');
+      setTimeout(function() { location.reload(); }, 1000);
+    } else {
+      alert('Failed: ' + (data.error || 'Unknown error'));
+      btn.disabled = false;
+      btn.textContent = 'Update';
+    }
+  } catch (e) {
+    alert('Network error');
+    btn.disabled = false;
+    btn.textContent = 'Update';
+  }
+}
+
+async function adminCancelOrder(orderId) {
+  var reason = document.getElementById('cancel-reason-input').value.trim();
+  if (!reason) { alert('Please provide a cancellation reason'); return; }
+  try {
+    var res = await fetch('/admin/orders/' + orderId + '/cancel', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      body: JSON.stringify({ cancelReason: reason })
+    });
+    var data = await res.json();
+    if (data.success) {
+      location.reload();
+    } else {
+      alert('Failed: ' + (data.error || 'Unknown error'));
+    }
+  } catch (e) {
+    alert('Network error');
+  }
+}
+</script>
+            </div>
+          <% } %>
+          <p class="mt-2"><span class="font-medium text-gray-900">Date:</span> <%= new Date(order.createdAt).toLocaleString() %></p>
+        </div>
+      </div>
+
+      <!-- Payment Details -->
+      <div class="bg-white shadow sm:rounded-lg border p-6">
+        <h3 class="text-lg font-medium text-gray-900 border-b pb-3 mb-4">Payment Details</h3>
+        <div class="text-sm text-gray-600 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="font-medium text-gray-900">Method:</span>
+            <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z"/></svg>
+              Online (Stripe)
+            </span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="font-medium text-gray-900">Status:</span>
+            <span class="inline-flex items-center gap-1 text-sm font-bold <%= order.paymentStatus === 'Paid' ? 'text-green-700' : order.paymentStatus === 'Failed' ? 'text-red-700' : 'text-yellow-700' %>">
+              <span class="w-2 h-2 rounded-full <%= order.paymentStatus === 'Paid' ? 'bg-green-500' : order.paymentStatus === 'Failed' ? 'bg-red-500' : 'bg-yellow-500' %>"></span>
+              <%= order.paymentStatus %>
+            </span>
+          </div>
+          <% if (order.paymentTimestamp) { %>
+            <p><span class="font-medium text-gray-900">Paid at:</span> <%= new Date(order.paymentTimestamp).toLocaleString() %></p>
+          <% } %>
+          <% if (order.stripePaymentIntentId) { %>
+            <p class="break-all"><span class="font-medium text-gray-900">Payment Intent:</span> <a href="https://dashboard.stripe.com/payments/<%= order.stripePaymentIntentId %>" target="_blank" rel="noopener" class="text-indigo-600 hover:text-indigo-800 underline text-xs"><%= order.stripePaymentIntentId %></a></p>
+          <% } %>
+          <% if (order.stripeCheckoutSessionId) { %>
+            <p class="break-all"><span class="font-medium text-gray-900">Checkout Session:</span> <a href="https://dashboard.stripe.com/test/sessions/<%= order.stripeCheckoutSessionId %>" target="_blank" rel="noopener" class="text-indigo-600 hover:text-indigo-800 underline text-xs"><%= order.stripeCheckoutSessionId %></a></p>
+          <% } %>
+          <% if (order.stripeRefundId) { %>
+            <p class="break-all"><span class="font-medium text-gray-900">Refund ID:</span> <a href="https://dashboard.stripe.com/test/refunds/<%= order.stripeRefundId %>" target="_blank" rel="noopener" class="text-indigo-600 hover:text-indigo-800 underline text-xs"><%= order.stripeRefundId %></a></p>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="bg-white shadow sm:rounded-lg border p-6">
+        <h3 class="text-lg font-medium text-gray-900 border-b pb-3 mb-4">Update Status</h3>
+        
+        <% if (order.status === 'Delivered') { %>
+          <div class="mb-4">
+            <div class="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <svg class="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              <span class="text-sm font-bold text-green-700">Order Delivered</span>
+            </div>
+          </div>
+        <% } else { %>
+          <div class="mb-4" id="status-update-section">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Current Status: <span class="font-bold text-indigo-600" id="current-status-text"><%= order.status %></span></label>
+            <div class="flex gap-2">
+              <select id="status-select" class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 sm:text-sm">
+                <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
+                <option value="Preparing" <%= order.status === 'Preparing' ? 'selected' : '' %>>Preparing</option>
+                <option value="Ready" <%= order.status === 'Ready' ? 'selected' : '' %>>Ready</option>
+                <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+              </select>
+              <button type="button" onclick="adminUpdateStatus('<%= order.id %>')" id="update-status-btn" class="bg-indigo-600 text-white px-4 py-2 rounded shadow-sm hover:bg-indigo-700 text-sm font-medium">Update</button>
+            </div>
+          </div>
+        <% } %>
+
+        <% if (order.status !== 'Cancelled' && order.status !== 'Delivered') { %>
+          <div class="border-t pt-4 mt-4" x-data="{ showCancel: false }">
+            <button @click="showCancel = !showCancel" x-show="!showCancel" type="button" class="w-full text-red-600 bg-red-50 hover:bg-red-100 py-2 px-4 rounded border border-red-200 text-sm font-medium transition-colors">
+              Cancel Order
+            </button>
+
+            <div x-show="showCancel" class="space-y-3" x-cloak>
+              <textarea id="cancel-reason-input" rows="2" placeholder="Reason for cancellation..." class="block w-full border border-red-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"></textarea>
+              <div class="flex gap-2">
+                <button type="button" onclick="adminCancelOrder('<%= order.id %>')" class="w-full bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm font-medium shadow-sm">Confirm Cancel</button>
+                <button type="button" @click="showCancel = false" class="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded hover:bg-gray-200 text-sm font-medium border border-gray-300">Keep It</button>
+              </div>
+            </div>
+          </div>
+        <% } else if (order.status === 'Cancelled') { %>
+          <div class="mt-4 p-3 bg-red-50 border border-red-200 rounded">
+            <p class="text-sm text-red-800 font-bold mb-1">Order Cancelled</p>
+            <p class="text-xs text-red-600">Reason: <%= order.cancelReason %></p>
+          </div>
+
+          <!-- Refund Status -->
+          <% if (order.paymentMethod === 'Online' && order.paymentStatus === 'Paid' && order.refundStatus) { %>
+            <div class="mt-3 p-3 <%= order.refundStatus === 'Completed' ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200' %> border rounded">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-bold <%= order.refundStatus === 'Completed' ? 'text-green-800' : 'text-amber-800' %>">
+                    Refund: <%= order.refundStatus %>
+                  </p>
+                  <p class="text-xs <%= order.refundStatus === 'Completed' ? 'text-green-600' : 'text-amber-600' %>">
+                    Amount: \u20B9<%= order.totalAmount.toFixed(2) %>
+                  </p>
+                </div>
+                <% if (order.refundStatus !== 'Completed') { %>
+                  <form method="POST" action="/admin/refunds/<%= order.id %>/complete" onsubmit="return confirm('Mark refund as transferred?')">
+                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
+                      Mark Transferred
+                    </button>
+                  </form>
+                <% } else { %>
+                  <span class="inline-flex items-center gap-1 text-xs font-semibold text-green-700">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    Transferred
+                  </span>
+                <% } %>
+              </div>
+            </div>
+          <% } %>
+        <% } %>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<% if (!order.dineIn && order.user.lat && order.user.lng) { %>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script id="customer-lat-data" type="application/json"><%- JSON.stringify(order.user.lat || 0) %></script>
+<script id="customer-lng-data" type="application/json"><%- JSON.stringify(order.user.lng || 0) %></script>
+<script>
+(function() {
+  var RESTAURANT_LAT = window.RESTAURANT_LAT || 23.5492425;
+  var RESTAURANT_LNG = window.RESTAURANT_LNG || 91.4668604;
+  var customerLat = JSON.parse(document.getElementById('customer-lat-data').textContent);
+  var customerLng = JSON.parse(document.getElementById('customer-lng-data').textContent);
+
+  function initMap() {
+    if (typeof L === 'undefined') return;
+    var map = L.map('order-map').setView([(customerLat + RESTAURANT_LAT) / 2, (customerLng + RESTAURANT_LNG) / 2], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(map);
+
+    var customerIcon = L.divIcon({
+      className: 'custom-marker',
+      html: '<div style="background:#3b82f6;width:14px;height:14px;border-radius:50%;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.3);"></div>',
+      iconSize: [18, 18], iconAnchor: [9, 9]
+    });
+    var restaurantIcon = L.divIcon({
+      className: 'custom-marker',
+      html: '<div style="background:#fc8019;width:14px;height:14px;border-radius:50%;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.3);"></div>',
+      iconSize: [18, 18], iconAnchor: [9, 9]
+    });
+
+    L.marker([customerLat, customerLng], { icon: customerIcon, title: 'Customer Location' }).addTo(map).bindPopup('Customer Location');
+    L.marker([RESTAURANT_LAT, RESTAURANT_LNG], { icon: restaurantIcon, title: 'Resto Restaurant' }).addTo(map).bindPopup('Resto Restaurant');
+    L.polyline([[RESTAURANT_LAT, RESTAURANT_LNG], [customerLat, customerLng]], {
+      color: '#fc8019', weight: 3, opacity: 0.8, dashArray: '8, 6'
+    }).addTo(map);
+    map.fitBounds([[RESTAURANT_LAT, RESTAURANT_LNG], [customerLat, customerLng]], { padding: [30, 30] });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMap);
+  } else {
+    initMap();
+  }
+})();
+</script>
+<% } %>

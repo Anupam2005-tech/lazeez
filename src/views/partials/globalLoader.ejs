@@ -1,0 +1,59 @@
+<% 
+  const rings = Math.min(locals.ringCount || 6, 6); 
+  const loaderSize = locals.size || '8em';
+%>
+
+<div class="loader-container">
+  <style>
+    .pl { 
+      width: var(--pl-size, 8em); 
+      height: var(--pl-size, 8em); 
+      display: block;
+    }
+    
+    .pl circle { 
+      transform-box: fill-box; 
+      transform-origin: 50% 50%; 
+    }
+    
+    /* These use standard CSS syntax, so no more validator errors */
+    .pl__ring1 { animation: ring1_ 4s 0s ease-in-out infinite; }
+    .pl__ring2 { animation: ring2_ 4s 0.04s ease-in-out infinite; }
+    .pl__ring3 { animation: ring3_ 4s 0.08s ease-in-out infinite; }
+    .pl__ring4 { animation: ring4_ 4s 0.12s ease-in-out infinite; }
+    .pl__ring5 { animation: ring5_ 4s 0.16s ease-in-out infinite; }
+    .pl__ring6 { animation: ring6_ 4s 0.2s ease-in-out infinite; }
+
+    @keyframes ring1_ { from { stroke-dashoffset: -376.2; transform: rotate(-0.25turn); } 23% { stroke-dashoffset: -94.2; transform: rotate(1turn); } 46%, 50% { stroke-dashoffset: -376.2; transform: rotate(2.25turn); } 73% { stroke-dashoffset: -94.2; transform: rotate(3.5turn); } 96%, to { stroke-dashoffset: -376.2; transform: rotate(4.75turn); } }
+    @keyframes ring2_ { from { stroke-dashoffset: -329.2; transform: rotate(-0.25turn); } 23% { stroke-dashoffset: -82.5; transform: rotate(1turn); } 46%, 50% { stroke-dashoffset: -329.2; transform: rotate(2.25turn); } 73% { stroke-dashoffset: -82.5; transform: rotate(3.5turn); } 96%, to { stroke-dashoffset: -329.2; transform: rotate(4.75turn); } }
+    @keyframes ring3_ { from { stroke-dashoffset: -288.4; transform: rotate(-0.25turn); } 23% { stroke-dashoffset: -72.3; transform: rotate(1turn); } 46%, 50% { stroke-dashoffset: -288.4; transform: rotate(2.25turn); } 73% { stroke-dashoffset: -72.3; transform: rotate(3.5turn); } 96%, to { stroke-dashoffset: -288.4; transform: rotate(4.75turn); } }
+    @keyframes ring4_ { from { stroke-dashoffset: -254.0; transform: rotate(-0.25turn); } 23% { stroke-dashoffset: -63.6; transform: rotate(1turn); } 46%, 50% { stroke-dashoffset: -254.0; transform: rotate(2.25turn); } 73% { stroke-dashoffset: -63.6; transform: rotate(3.5turn); } 96%, to { stroke-dashoffset: -254.0; transform: rotate(4.75turn); } }
+    @keyframes ring5_ { from { stroke-dashoffset: -225.7; transform: rotate(-0.25turn); } 23% { stroke-dashoffset: -56.5; transform: rotate(1turn); } 46%, 50% { stroke-dashoffset: -225.7; transform: rotate(2.25turn); } 73% { stroke-dashoffset: -56.5; transform: rotate(3.5turn); } 96%, to { stroke-dashoffset: -225.7; transform: rotate(4.75turn); } }
+    @keyframes ring6_ { from { stroke-dashoffset: -203.8; transform: rotate(-0.25turn); } 23% { stroke-dashoffset: -51.1; transform: rotate(1turn); } 46%, 50% { stroke-dashoffset: -203.8; transform: rotate(2.25turn); } 73% { stroke-dashoffset: -51.1; transform: rotate(3.5turn); } 96%, to { stroke-dashoffset: -203.8; transform: rotate(4.75turn); } }
+  </style>
+
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" class="pl" style="--pl-size: <%= loaderSize %>;">
+    <% 
+      const config = [
+        { r: 60, sw: 8, hue: 3,  dash: 377, offset: -376.4 },
+        { r: 52.5, sw: 7, hue: 13, dash: 329.9, offset: -329.3 },
+        { r: 46, sw: 6, hue: 23, dash: 289, offset: -288.6 },
+        { r: 40.5, sw: 5, hue: 33, dash: 254.5, offset: -254 },
+        { r: 36, sw: 4, hue: 43, dash: 226.2, offset: -225.8 },
+        { r: 32.5, sw: 3, hue: 53, dash: 204.2, offset: -203.9 }
+      ];
+    %>
+    <% for(let i = 0; i < rings; i++) { %>
+      <circle 
+        class="pl__ring<%= i+1 %>" 
+        cx="64" cy="64" r="<%= config[i].r %>" 
+        stroke-width="<%= config[i].sw %>" 
+        stroke="hsl(<%= config[i].hue %>,90%,55%)" 
+        stroke-dasharray="<%= config[i].dash %> <%= config[i].dash %>" 
+        stroke-dashoffset="<%= config[i].offset %>" 
+        stroke-linecap="round" fill="none" 
+        transform="rotate(-90,64,64)">
+      </circle>
+    <% } %>
+  </svg>
+</div>

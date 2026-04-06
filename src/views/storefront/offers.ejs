@@ -1,0 +1,60 @@
+<%- include('../partials/header') %>
+
+<div class="max-w-[1200px] mx-auto px-4 sm:px-6 pt-10 pb-20">
+
+  <div class="mb-8">
+    <h1 class="text-2xl font-extrabold text-[#3d4152] tracking-tight">Current Offers</h1>
+    <p class="text-sm text-[#7e808c] mt-1">Grab the best deals before they're gone!</p>
+  </div>
+
+  <% if (offers.length === 0) { %>
+    <div class="py-20 text-center">
+      <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+        <svg class="w-10 h-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/>
+        </svg>
+      </div>
+      <p class="text-lg font-bold text-gray-400">No offers available right now</p>
+      <p class="text-sm text-gray-400 mt-1">Check back soon for exciting deals!</p>
+    </div>
+  <% } else { %>
+    <div class="space-y-8">
+      <% offers.forEach(offer => { %>
+        <div class="w-full bg-white rounded-2xl shadow-sm border border-[#e9e9eb] overflow-hidden hover:shadow-lg transition-shadow">
+          <div class="grid grid-cols-1 lg:grid-cols-2">
+            <!-- Image: full width on mobile, half on desktop, 2/3 screen height on mobile -->
+            <% if (offer.image) { %>
+              <div class="w-full bg-gray-100 overflow-hidden" style="min-height: 50vh;">
+                <img src="<%= offer.image %>" class="w-full h-full object-cover" alt="<%= offer.name %>" loading="lazy">
+              </div>
+            <% } else { %>
+              <div class="w-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center" style="min-height: 50vh;">
+                <svg class="w-24 h-24 text-white/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/>
+                </svg>
+              </div>
+            <% } %>
+            <!-- Content -->
+            <div class="p-8 lg:p-12 flex flex-col justify-center">
+              <div class="flex items-center gap-3 mb-4">
+                <span class="text-sm font-bold text-white bg-orange-500 px-3 py-1 rounded-full uppercase">Special Offer</span>
+                <span class="text-sm text-[#93959f]"><%= new Date(offer.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) %></span>
+              </div>
+              <h2 class="text-2xl lg:text-3xl font-extrabold text-[#3d4152] mb-3 leading-tight"><%= offer.name %></h2>
+              <p class="text-base lg:text-lg text-[#686b78] leading-relaxed"><%= offer.description || 'Special offer available now! Grab this deal before it\'s gone.' %></p>
+              <div class="mt-6">
+                <a href="/menu<%= offer.dishName ? '?search=' + encodeURIComponent(offer.dishName) : '' %>" class="inline-flex items-center gap-2 bg-[#60b246] text-white font-bold px-6 py-3 rounded-xl text-sm hover:bg-green-600 transition-colors">
+                  Order Now
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+
+</div>
+
+<%- include('../partials/footer') %>

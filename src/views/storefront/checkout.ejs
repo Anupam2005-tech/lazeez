@@ -1,0 +1,772 @@
+<%- include('../partials/header') %>
+
+<div class="bg-[#e9ecee] min-h-[90vh] py-8 px-4">
+  <div class="max-w-[1200px] mx-auto mb-6">
+    <a href="/" class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-sm border border-[#e9e9eb] text-[#686b78] hover:text-[#fc8019] transition-all active:scale-95 group">
+      <svg class="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+      </svg>
+    </a>
+  </div>
+  <div class="max-w-[1200px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- Left Block: Address + Payment -->
+    <div class="lg:col-span-8 flex flex-col gap-6">
+      <form action="/checkout" method="POST" id="checkoutForm" class="flex flex-col gap-6">
+        
+        <!-- Account / User verification box -->
+        <div class="bg-white p-6 shadow-sm relative">
+          <div class="absolute top-6 left-[-15px] w-8 h-8 bg-white border border-[#fc8019] text-[#fc8019] font-bold shadow-md flex items-center justify-center -ml-2">1</div>
+          <div class="pl-6">
+            <h2 class="text-xl font-bold text-[#282c3f] mb-1">Account</h2>
+            <p class="text-sm font-medium text-[#7e808c] mb-6">To place your order now, log in to your existing account or sign up.</p>
+            <% if (user) { %>
+              <div class="border border-[#e9e9eb] p-4 text-[14px]" id="account-info-box">
+                <span class="font-bold text-[#282c3f]" id="account-display-name"><%= user.name || 'User' %></span> 
+                <span class="text-[#7e808c]" id="account-display-email"> | <%= user.email %></span>
+                <% if (userData.phone) { %>
+                  <span class="text-[#7e808c]" id="account-display-phone"> | <%= userData.phone %></span>
+                <% } %>
+                <span class="text-[#60b246] font-bold float-right uppercase text-xs tracking-wider cursor-pointer">Logged In ✓</span>
+              </div>
+
+              <% if (!userData.phone || !userData.email) { %>
+                <!-- Missing Profile Info Banner -->
+                <div id="profile-missing-banner" class="mt-4 border-2 border-dashed border-red-300 bg-red-50 rounded-lg p-5">
+                  <div class="flex items-start gap-3 mb-4">
+                    <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                      <svg class="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 class="text-sm font-bold text-red-700 mb-0.5">Complete your profile to place an order</h3>
+                      <p class="text-xs text-red-600">We need your <% if (!userData.phone) { %>phone number<% } %><% if (!userData.phone && !userData.email) { %> and <% } %><% if (!userData.email) { %>email address<% } %> to contact you about your order.</p>
+                    </div>
+                  </div>
+
+                  <div class="space-y-3">
+                    <div>
+                      <label class="block text-[11px] font-semibold text-[#93959f] uppercase mb-1">Name</label>
+                      <input type="text" id="profile-edit-name" value="<%= userData.name || '' %>" class="w-full border border-[#d4d5d9] rounded px-3 py-2 text-sm outline-none focus:border-[#fc8019]" placeholder="Your full name">
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label class="block text-[11px] font-semibold text-[#93959f] uppercase mb-1">Phone Number <span class="text-red-500">*</span></label>
+                        <input type="tel" id="profile-edit-phone" value="<%= userData.phone || '' %>" class="w-full border <%= !userData.phone ? 'border-red-400 bg-red-50' : 'border-[#d4d5d9]' %> rounded px-3 py-2 text-sm outline-none focus:border-[#fc8019]" placeholder="+91 9876543210" required>
+                      </div>
+                      <div>
+                        <label class="block text-[11px] font-semibold text-[#93959f] uppercase mb-1">Email <span class="text-red-500">*</span></label>
+                        <% if (userData.email) { %>
+                          <input type="email" id="profile-edit-email" value="<%= userData.email %>" class="w-full border border-[#d4d5d9] rounded px-3 py-2 text-sm bg-gray-100 text-gray-500 cursor-not-allowed" placeholder="you@example.com" disabled>
+                          <p class="text-[10px] text-[#93959f] mt-0.5">Email cannot be changed once set</p>
+                        <% } else { %>
+                          <input type="email" id="profile-edit-email" value="" class="w-full border border-red-400 bg-red-50 rounded px-3 py-2 text-sm outline-none focus:border-[#fc8019]" placeholder="you@example.com" required>
+                        <% } %>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-2 pt-1">
+                      <button type="button" id="profile-save-btn" onclick="saveProfileFromCheckout()" class="bg-[#60b246] text-white font-bold uppercase text-xs py-2.5 px-5 rounded hover:bg-green-600 transition-colors">
+                        Save & Continue
+                      </button>
+                      <span id="profile-save-status" class="text-xs text-green-600 font-semibold hidden">✓ Saved!</span>
+                      <span id="profile-save-error" class="text-xs text-red-500 font-semibold hidden"></span>
+                    </div>
+                  </div>
+                </div>
+              <% } %>
+            <% } else { %>
+              <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                <a href="/auth/login" class="border border-[#60b246] text-[#60b246] px-6 sm:px-8 py-2.5 font-bold uppercase text-xs sm:text-sm hover:bg-[#60b246] hover:text-white transition-colors text-center w-full max-w-full sm:max-w-[180px]">Have an account? LOG IN</a>
+                <a href="/auth/register" class="bg-[#60b246] text-white px-6 sm:px-8 py-2.5 font-bold uppercase text-xs sm:text-sm hover:shadow-lg transition-shadow text-center w-full max-w-full sm:max-w-[180px]">New to Lazeez? SIGN UP</a>
+              </div>
+            <% } %>
+          </div>
+        </div>
+
+        <input type="hidden" name="dineIn" value="false">
+
+        <!-- Delivery Address Box -->
+        <div class="bg-white p-6 shadow-sm relative <%= user ? '' : 'opacity-50 pointer-events-none' %>">
+          <div class="absolute top-6 left-[-15px] w-8 h-8 bg-white border border-[#282c3f] text-[#282c3f] font-bold shadow-md flex items-center justify-center -ml-2">2</div>
+          <div class="pl-6">
+            <h2 class="text-xl font-bold text-[#282c3f] mb-4">Delivery address</h2>
+
+            <% if (savedAddresses.length > 0) { %>
+              <div class="space-y-3 mb-4" id="address-list">
+                <% savedAddresses.forEach(function(addr) { %>
+                  <label class="flex items-start gap-3 p-3 border border-[#e9e9eb] rounded-lg cursor-pointer hover:border-[#fc8019] transition-colors <%= addr.isDefault ? 'border-[#fc8019] bg-orange-50' : '' %>" data-address-id="<%= addr.id %>">
+                    <input type="radio" name="selected-address" value="<%= addr.id %>" class="mt-1 accent-[#fc8019]" <%= addr.isDefault ? 'checked' : '' %> onchange="selectAddress(<%= addr.id %>)">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2 mb-0.5">
+                        <span class="text-xs font-bold text-[#fc8019] uppercase bg-orange-100 px-2 py-0.5 rounded"><%= addr.label %></span>
+                        <% if (addr.isDefault) { %><span class="text-[10px] text-gray-400">Default</span><% } %>
+                      </div>
+                      <p class="text-sm text-[#3d4152] font-medium"><%= [addr.flatNo, addr.address].filter(Boolean).join(', ') %></p>
+                      <% if (addr.landmark) { %><p class="text-xs text-[#7e808c]">Landmark: <%= addr.landmark %></p><% } %>
+                      <% if (addr.pincode) { %><p class="text-xs text-[#7e808c]">Pincode: <%= addr.pincode %></p><% } %>
+                    </div>
+                  </label>
+                <% }) %>
+              </div>
+            <% } %>
+
+            <!-- Add new address button -->
+            <button type="button" onclick="toggleNewAddress()" class="text-[#60b246] font-bold text-sm flex items-center gap-1 hover:text-green-700">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+              Add New Address
+            </button>
+
+            <!-- New Address Form (hidden by default) -->
+            <div id="new-address-form" class="hidden mt-4 border border-[#e9e9eb] p-4 rounded-lg">
+              <div class="space-y-3">
+                <div class="flex gap-3">
+                  <div class="flex-1">
+                    <label class="block text-[11px] font-semibold text-[#93959f] uppercase mb-1">Label <span class="text-red-500">*</span></label>
+                    <select id="new-addr-label" class="w-full border border-[#d4d5d9] rounded px-3 py-2 text-sm outline-none focus:border-[#fc8019]">
+                      <option value="Home">Home</option>
+                      <option value="Work">Work</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  <div class="flex-1">
+                    <label class="block text-[11px] font-semibold text-[#93959f] uppercase mb-1">Flat / House No <span class="text-red-500">*</span></label>
+                    <input type="text" id="new-addr-flatNo" maxlength="50" class="w-full border border-[#d4d5d9] rounded px-3 py-2 text-sm outline-none focus:border-[#fc8019]" placeholder="e.g. B-201">
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold text-[#93959f] uppercase mb-1">Address <span class="text-red-500">*</span></label>
+                  <input type="text" id="new-addr-address" maxlength="255" class="w-full border border-[#d4d5d9] rounded px-3 py-2 text-sm outline-none focus:border-[#fc8019]" placeholder="Street, area, city">
+                </div>
+                <div class="flex gap-3">
+                  <div class="flex-1">
+                    <label class="block text-[11px] font-semibold text-[#93959f] uppercase mb-1">Landmark <span class="text-red-500">*</span></label>
+                    <input type="text" id="new-addr-landmark" maxlength="255" class="w-full border border-[#d4d5d9] rounded px-3 py-2 text-sm outline-none focus:border-[#fc8019]" placeholder="Nearby landmark">
+                  </div>
+                  <div class="flex-1">
+                    <label class="block text-[11px] font-semibold text-[#93959f] uppercase mb-1">Pincode <span class="text-red-500">*</span></label>
+                    <input type="text" id="new-addr-pincode" maxlength="10" class="w-full border border-[#d4d5d9] rounded px-3 py-2 text-sm outline-none focus:border-[#fc8019]" placeholder="Pincode">
+                  </div>
+                </div>
+                <div class="flex gap-2 pt-1">
+                  <button type="button" onclick="saveNewAddress()" class="bg-[#60b246] text-white font-bold uppercase text-xs py-2 px-4 rounded hover:bg-green-600 transition-colors">Save & Use</button>
+                  <button type="button" onclick="toggleNewAddress()" class="bg-gray-100 text-gray-700 font-bold uppercase text-xs py-2 px-4 rounded border border-gray-300 hover:bg-gray-200 transition-colors">Cancel</button>
+                </div>
+              </div>
+            </div>
+
+            <input type="hidden" name="address" id="checkout-address-hidden" value="">
+          </div>
+        </div>
+
+        <!-- Payment Box -->
+        <div class="bg-white p-6 shadow-sm relative <%= user ? '' : 'opacity-50 pointer-events-none' %>">
+          <div class="absolute top-6 left-[-15px] w-8 h-8 bg-white border border-[#282c3f] text-[#282c3f] font-bold shadow-md flex items-center justify-center -ml-2">3</div>
+          <div class="pl-6">
+            <h2 class="text-xl font-bold text-[#282c3f] mb-8">Payment</h2>
+
+            <div class="border border-[#e9e9eb] p-6 rounded-xl">
+              <div class="flex items-center gap-3 mb-4">
+                <svg class="w-8 h-8 text-[#3395ff]" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                </svg>
+                <div>
+                  <h3 class="text-base font-bold text-[#282c3f]">Pay securely with Razorpay</h3>
+                  <p class="text-xs text-[#7e808c]">Your payment is protected by Razorpay's secure payment infrastructure</p>
+                </div>
+              </div>
+
+              <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                <p class="text-sm text-[#3d4152] font-medium mb-2">Accepted payment methods:</p>
+                <div class="flex items-center gap-3 flex-wrap">
+                  <span class="inline-flex items-center gap-1 text-xs font-semibold text-[#3d4152] bg-white border border-[#e9e9eb] px-3 py-1.5 rounded-lg">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
+                    Credit / Debit Card
+                  </span>
+                  <span class="inline-flex items-center gap-1 text-xs font-semibold text-[#3d4152] bg-white border border-[#e9e9eb] px-3 py-1.5 rounded-lg">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 10h18M3 6h18M3 14h18M3 18h18"/></svg>
+                    Net Banking
+                  </span>
+                  <span class="inline-flex items-center gap-1 text-xs font-semibold text-[#3d4152] bg-white border border-[#e9e9eb] px-3 py-1.5 rounded-lg">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    UPI / QR Code
+                  </span>
+                  <span class="inline-flex items-center gap-1 text-xs font-semibold text-[#3d4152] bg-white border border-[#e9e9eb] px-3 py-1.5 rounded-lg">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4h-4z"/></svg>
+                    Wallets
+                  </span>
+                </div>
+              </div>
+
+              <div class="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4">
+                <div class="flex items-center gap-2 mb-1">
+                  <svg class="w-5 h-5 text-[#fc8019]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                  </svg>
+                  <span class="text-sm font-bold text-[#282c3f]">UPI / QR Payment</span>
+                </div>
+                <p class="text-xs text-[#7e808c] mb-2">Scan QR code or use any UPI app (GPay, PhonePe, Paytm, etc.)</p>
+                <div class="flex items-center gap-2 bg-white border border-orange-200 rounded-md px-3 py-2">
+                  <span class="text-xs text-[#93959f]">Exact amount to pay:</span>
+                  <span class="text-sm font-bold text-[#282c3f]">₹<%= grandTotal.toFixed(2) %></span>
+                </div>
+              </div>
+
+              <p class="text-xs text-[#93959f] leading-relaxed">
+                You'll see a secure Razorpay payment modal to complete your payment. After successful payment, your order will be confirmed immediately.
+              </p>
+            </div>
+
+            <button type="submit" id="checkout-pay-btn" class="w-full bg-[#60b246] text-white font-bold py-4 text-[15px] uppercase tracking-wider mt-6 hover:shadow-lg hover:bg-green-600 transition-all text-center">
+              PAY ₹<%= grandTotal.toFixed(2) %> SECURELY
+            </button>
+
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Right Block: Compact Summary Side-panel -->
+    <div class="lg:col-span-4 self-start bg-white shadow-sm p-6 sticky top-28">
+      <div class="flex items-start gap-4 mb-6 border-b border-[#e9e9eb] pb-4">
+        <div class="w-12 h-12 bg-orange-100 flex items-center justify-center shrink-0 shadow-sm">
+          <span class="text-orange-500 font-bold text-lg">L</span>
+        </div>
+        <div>
+          <h2 class="text-[#282c3f] font-bold text-[16px] leading-tight">Lazeez Signature</h2>
+          <p class="text-[#686b78] text-[13px]">Downtown Area</p>
+        </div>
+      </div>
+
+      <div class="max-h-[35vh] overflow-y-auto custom-scroll pr-2 mb-4 space-y-4" id="checkout-items">
+        <% cart.forEach(item => { %>
+          <div class="flex justify-between items-center text-[13px] text-[#3d4152] font-medium group checkout-item-row" data-item-id="<%= item.id %>">
+            <div class="flex items-center gap-2 truncate">
+              <svg class="w-3.5 h-3.5 flex-shrink-0 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="12" cy="12" r="4" fill="currentColor"></circle></svg>
+              <span class="truncate pr-2"><%= item.name %></span>
+            </div>
+            
+            <div class="flex items-center gap-3 shrink-0 justify-end w-[140px]">
+              <div class="border border-[#d4d5d9] bg-white text-green-600 font-bold text-[11px] flex items-center justify-between w-[60px] h-[24px] px-1 shadow-sm rounded">
+                <button type="button" data-action="decrement" data-item-id="<%= item.id %>" data-qty="<%= item.quantity - 1 %>" class="text-gray-400 hover:text-green-600 focus:outline-none bg-transparent border-none cursor-pointer text-[13px] <%= item.quantity <= 1 ? 'pointer-events-none opacity-50 text-gray-300' : '' %>" <%= item.quantity <= 1 ? 'disabled' : '' %>>−</button>
+                <span class="checkout-item-qty text-center select-none"><%= item.quantity %></span>
+                <button type="button" data-action="increment" data-item-id="<%= item.id %>" data-qty="<%= item.quantity + 1 %>" class="text-green-600 hover:text-green-700 focus:outline-none bg-transparent border-none cursor-pointer text-[13px]">+</button>
+              </div>
+              <span class="w-[60px] text-right checkout-item-price">₹<%=(item.price * item.quantity).toFixed(2)%></span>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+
+      <!-- Bill Details -->
+      <div class="bg-gray-50 pt-4 p-4 mb-4">
+        <div class="space-y-2 text-[13px] text-[#686b78]">
+          <div class="flex justify-between">
+            <span>Item Total</span>
+            <span id="checkout-item-total">₹<%= itemTotal.toFixed(2) %></span>
+          </div>
+          <div class="flex justify-between">
+            <span>Delivery Fee <% if (distanceKm > 0) { %>| <span id="checkout-distance"><%= distanceKm.toFixed(1) %> km</span><% } %></span>
+            <span id="checkout-delivery-fee">₹<%= deliveryFee.toFixed(2) %></span>
+          </div>
+          <div class="flex justify-between text-orange-500">
+            <span>Platform fee</span>
+            <span id="checkout-platform-fee">₹<%= platformFee.toFixed(2) %></span>
+          </div>
+        </div>
+        
+        <div class="border-t border-[#e9e9eb] mt-3 pt-3 flex justify-between items-center text-[15px] font-bold text-[#282c3f]">
+          <span>TO PAY</span>
+          <span id="checkout-to-pay">₹<%= grandTotal.toFixed(2) %></span>
+        </div>
+      </div>
+
+      <!-- Delivery Estimate -->
+      <div class="bg-gray-50 p-4 mb-4">
+        <div class="flex items-center gap-3 mb-2">
+          <svg class="w-5 h-5 text-orange-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span class="text-[14px] font-bold text-[#282c3f]">Estimated delivery: <span id="checkout-delivery-time" class="text-orange-500">...</span></span>
+        </div>
+        <p class="text-[12px] text-[#7e808c] leading-relaxed ml-8">
+          We are trying to deliver your order by this time, but it may take a few minutes more. This can be due to traffic, weather, or other circumstances.
+        </p>
+      </div>
+      
+      <div class="mt-4 p-3 bg-gray-50 border border-[#e9e9eb] text-[12px] text-[#93959f] leading-relaxed">
+        <span class="font-bold text-[#535665]">Review your order and address details to avoid cancellations.</span> 
+        Note: If you cancel within 60 seconds of placing your order, a 100% refund will be issued. No refund for cancellations made after 60 seconds.
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+<script id="checkout-data" type="application/json"><%- JSON.stringify({ itemTotal: itemTotal, deliveryFee: deliveryFee, platformFee: platformFee, grandTotal: grandTotal, hasAddress: !!userData.address || savedAddresses.length > 0, hasPhone: !!userData.phone, hasEmail: !!userData.email }) %></script>
+<script>
+(function() {
+  var __checkoutData = JSON.parse(document.getElementById('checkout-data').textContent);
+  var ITEM_TOTAL = __checkoutData.itemTotal;
+  var DELIVERY_FEE = __checkoutData.deliveryFee;
+  var PLATFORM_FEE = __checkoutData.platformFee;
+  var GRAND_TOTAL = __checkoutData.grandTotal;
+  var HAS_PHONE = __checkoutData.hasPhone;
+  var HAS_EMAIL = __checkoutData.hasEmail;
+
+  // Inline profile edit from checkout page
+  window.saveProfileFromCheckout = async function() {
+    var nameInput = document.getElementById('profile-edit-name');
+    var phoneInput = document.getElementById('profile-edit-phone');
+    var emailInput = document.getElementById('profile-edit-email');
+    var saveBtn = document.getElementById('profile-save-btn');
+    var statusEl = document.getElementById('profile-save-status');
+    var errorEl = document.getElementById('profile-save-error');
+
+    var name = nameInput ? nameInput.value.trim() : '';
+    var phone = phoneInput ? phoneInput.value.trim() : '';
+    var email = emailInput ? emailInput.value.trim() : '';
+    var emailLocked = emailInput ? emailInput.disabled : false;
+
+    // Validation
+    if (!phone) {
+      errorEl.textContent = 'Phone number is required';
+      errorEl.classList.remove('hidden');
+      statusEl.classList.add('hidden');
+      phoneInput.focus();
+      return;
+    }
+    if (!emailLocked && !email) {
+      errorEl.textContent = 'Email is required';
+      errorEl.classList.remove('hidden');
+      statusEl.classList.add('hidden');
+      emailInput.focus();
+      return;
+    }
+
+    // Save
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
+    errorEl.classList.add('hidden');
+    statusEl.classList.add('hidden');
+
+    try {
+      var body = { name: name, phone: phone };
+      if (!emailLocked) body.email = email;
+      var res = await fetch('/auth/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      var data = await res.json();
+
+      if (data.success) {
+        HAS_PHONE = true;
+        HAS_EMAIL = true;
+
+        // Update account display box
+        var displayName = document.getElementById('account-display-name');
+        var displayEmail = document.getElementById('account-display-email');
+        var displayPhone = document.getElementById('account-display-phone');
+        if (displayName && name) displayName.textContent = name;
+        if (displayEmail) displayEmail.textContent = ' | ' + email;
+        if (!displayPhone) {
+          var infoBox = document.getElementById('account-info-box');
+          if (infoBox) {
+            var phoneSpan = document.createElement('span');
+            phoneSpan.className = 'text-[#7e808c]';
+            phoneSpan.id = 'account-display-phone';
+            phoneSpan.textContent = ' | ' + phone;
+            var loggedInBadge = infoBox.querySelector('.text-\\[\\#60b246\\]');
+            if (loggedInBadge) infoBox.insertBefore(phoneSpan, loggedInBadge);
+            else infoBox.appendChild(phoneSpan);
+          }
+        } else {
+          displayPhone.textContent = ' | ' + phone;
+        }
+
+        // Animate and hide the banner
+        var banner = document.getElementById('profile-missing-banner');
+        if (banner) {
+          banner.style.transition = 'all 0.4s ease';
+          banner.style.borderColor = '#60b246';
+          banner.style.backgroundColor = '#f0fdf4';
+          // Show success state
+          banner.innerHTML = '<div class="flex items-center gap-3 text-green-700">' +
+            '<div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center shrink-0">' +
+            '<svg class="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">' +
+            '<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>' +
+            '</svg></div>' +
+            '<div><h3 class="text-sm font-bold">Profile updated!</h3>' +
+            '<p class="text-xs text-green-600">You can now place your order.</p></div></div>';
+          setTimeout(function() {
+            banner.style.opacity = '0';
+            banner.style.maxHeight = '0';
+            banner.style.overflow = 'hidden';
+            banner.style.padding = '0';
+            banner.style.marginTop = '0';
+            setTimeout(function() { banner.remove(); }, 400);
+          }, 2000);
+        }
+      } else {
+        errorEl.textContent = data.error || 'Failed to save profile';
+        errorEl.classList.remove('hidden');
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'SAVE & CONTINUE';
+      }
+    } catch (err) {
+      errorEl.textContent = 'Network error. Please try again.';
+      errorEl.classList.remove('hidden');
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'SAVE & CONTINUE';
+    }
+  };
+
+  var checkoutForm = document.getElementById('checkoutForm');
+  if (checkoutForm) {
+    checkoutForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      if (!HAS_PHONE || !HAS_EMAIL) {
+        // Scroll to the profile edit banner
+        var banner = document.getElementById('profile-missing-banner');
+        if (banner) {
+          banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          banner.style.transition = 'box-shadow 0.3s';
+          banner.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.4)';
+          setTimeout(function() { banner.style.boxShadow = ''; }, 2000);
+          // Focus the first empty required field
+          var phoneInput = document.getElementById('profile-edit-phone');
+          var emailInput = document.getElementById('profile-edit-email');
+          if (phoneInput && !phoneInput.value.trim()) phoneInput.focus();
+          else if (emailInput && !emailInput.value.trim()) emailInput.focus();
+        }
+        return;
+      }
+      var isDineIn = document.querySelector('input[name="dineIn"]');
+      var isDineInValue = isDineIn ? isDineIn.value === 'true' || isDineIn.value === 'on' : false;
+      var addrHidden = document.getElementById('checkout-address-hidden');
+      if (!isDineInValue && (!addrHidden || !addrHidden.value.trim())) {
+        alert('Please add a delivery address to place an order.');
+        if (typeof openAddressModal === 'function') openAddressModal();
+        return;
+      }
+      
+      var payBtn = document.getElementById('checkout-pay-btn');
+      if (payBtn) {
+        payBtn.disabled = true;
+        payBtn.textContent = 'PROCESSING...';
+      }
+
+      var formData = new FormData(checkoutForm);
+      var body = {};
+      formData.forEach(function(value, key) { body[key] = value; });
+
+      fetch('/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(body)
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (!data.success) {
+          alert(data.error || 'Failed to initialize payment');
+          if (payBtn) {
+            payBtn.disabled = false;
+            payBtn.textContent = 'PAY ₹' + (calcTotal(getItems()) + DELIVERY_FEE + PLATFORM_FEE).toFixed(2) + ' SECURELY';
+          }
+          return;
+        }
+
+        var options = {
+          key: data.key,
+          amount: data.amountInPaise,
+          currency: data.currency,
+          name: data.name,
+          description: data.description,
+          order_id: data.orderId,
+          prefill: {
+            name: data.prefill.name,
+            email: data.prefill.email,
+            contact: data.prefill.contact
+          },
+          config: {
+            display: {
+              blocks: {
+                utib: {
+                  name: 'Pay via UPI',
+                  instruments: [
+                    { method: 'upi', flows: ['collect', 'qr'] }
+                  ]
+                },
+                other: {
+                  name: 'Other Payment Methods',
+                  instruments: [
+                    { method: 'card' },
+                    { method: 'netbanking' },
+                    { method: 'wallet' }
+                  ]
+                }
+              },
+              sequence: ['block.utib', 'block.other'],
+              preferences: {
+                show_default_blocks: true
+              }
+            }
+          },
+          theme: {
+            color: '#fc8019'
+          },
+          handler: function(response) {
+            window.location.href = '/razorpay/success/' + response.razorpay_order_id;
+          },
+          modal: {
+            ondismiss: function() {
+              if (payBtn) {
+                payBtn.disabled = false;
+                payBtn.textContent = 'PAY ₹' + (calcTotal(getItems()) + DELIVERY_FEE + PLATFORM_FEE).toFixed(2) + ' SECURELY';
+              }
+              window.location.href = '/razorpay/cancel';
+            }
+          }
+        };
+
+        var rzp = new Razorpay(options);
+        rzp.on('payment.failed', function(response) {
+          alert('Payment failed: ' + (response.error.description || 'Please try again'));
+          if (payBtn) {
+            payBtn.disabled = false;
+            payBtn.textContent = 'PAY ₹' + (calcTotal(getItems()) + DELIVERY_FEE + PLATFORM_FEE).toFixed(2) + ' SECURELY';
+          }
+        });
+        rzp.open();
+      })
+      .catch(function(err) {
+        console.error('Checkout error:', err);
+        alert('Something went wrong. Please try again.');
+        if (payBtn) {
+          payBtn.disabled = false;
+          payBtn.textContent = 'PAY ₹' + (calcTotal(getItems()) + DELIVERY_FEE + PLATFORM_FEE).toFixed(2) + ' SECURELY';
+        }
+      });
+    });
+  }
+
+  function getItems() {
+    return window.RestoCartState ? window.RestoCartState.items || [] : [];
+  }
+
+  function calcTotal(items) {
+    return items.reduce(function(sum, i) { return sum + (i.price * i.quantity); }, 0);
+  }
+
+  function updateBill(items) {
+    var total = calcTotal(items);
+    var newGrandTotal = total + DELIVERY_FEE + PLATFORM_FEE;
+    var itemTotalEl = document.getElementById('checkout-item-total');
+    var toPayEl = document.getElementById('checkout-to-pay');
+    var payBtn = document.getElementById('checkout-pay-btn');
+    if (itemTotalEl) itemTotalEl.textContent = '₹' + total.toFixed(2);
+    if (toPayEl) toPayEl.textContent = '₹' + newGrandTotal.toFixed(2);
+    if (payBtn) payBtn.textContent = 'PAY ₹' + newGrandTotal.toFixed(2) + ' SECURELY';
+  }
+
+  function renderRow(item) {
+    var row = document.querySelector('.checkout-item-row[data-item-id="' + item.id + '"]');
+    if (!row) return;
+    var qtyEl = row.querySelector('.checkout-item-qty');
+    var priceEl = row.querySelector('.checkout-item-price');
+    var btnDec = row.querySelector('[data-action="decrement"]');
+    var btnInc = row.querySelector('[data-action="increment"]');
+    
+    if (qtyEl) qtyEl.textContent = item.quantity;
+    if (priceEl) priceEl.textContent = '₹' + (item.price * item.quantity).toFixed(2);
+    
+    if (btnDec) {
+      btnDec.setAttribute('data-qty', item.quantity - 1);
+      if (item.quantity <= 1) {
+        btnDec.classList.add('pointer-events-none', 'opacity-50', 'text-gray-300');
+        btnDec.setAttribute('disabled', '');
+      } else {
+        btnDec.classList.remove('pointer-events-none', 'opacity-50', 'text-gray-300');
+        btnDec.removeAttribute('disabled');
+      }
+    }
+    if (btnInc) {
+      btnInc.setAttribute('data-qty', item.quantity + 1);
+    }
+  }
+
+  function removeRow(itemId) {
+    var row = document.querySelector('.checkout-item-row[data-item-id="' + itemId + '"]');
+    if (row) {
+      row.style.transition = 'opacity 0.3s, transform 0.3s';
+      row.style.opacity = '0';
+      row.style.transform = 'translateX(-20px)';
+      setTimeout(function() { row.remove(); }, 300);
+    }
+  }
+
+  window.checkoutPage = {
+    updateQty: function(itemId, newQty) {
+      RestoCart.update(itemId, newQty).then(function() {
+        var items = getItems();
+        var item = items.find(function(i) { return i.id === itemId; });
+        if (item) {
+          renderRow(item);
+        } else {
+          removeRow(itemId);
+        }
+        updateBill(items);
+      });
+    }
+  };
+
+  document.addEventListener('click', function(e) {
+    var btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    var action = btn.getAttribute('data-action');
+    if (action === 'decrement' || action === 'increment') {
+      var id = btn.getAttribute('data-item-id');
+      var qty = parseInt(btn.getAttribute('data-qty'), 10);
+      window.checkoutPage.updateQty(id, qty);
+    }
+  });
+
+  // Address selection and management
+  window.toggleNewAddress = function() {
+    var form = document.getElementById('new-address-form');
+    if (form) form.classList.toggle('hidden');
+  };
+
+  window.selectAddress = function(addrId) {
+    // Find the address data from the radio button's container
+    var radio = document.querySelector('input[value="' + addrId + '"]');
+    if (!radio) return;
+    var container = radio.closest('[data-address-id]');
+    // Update hidden field with the full address text
+    var textParts = container.querySelector('.text-sm, p').textContent;
+    var allPs = container.querySelectorAll('p');
+    var parts = [];
+    allPs.forEach(function(p) { parts.push(p.textContent); });
+    document.getElementById('checkout-address-hidden').value = parts.join(', ');
+    // Set as default via API
+    fetch('/addresses/' + addrId + '/set-default', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' }
+    }).catch(function() {});
+    // Update all radio labels styling
+    document.querySelectorAll('[data-address-id]').forEach(function(el) {
+      el.classList.remove('border-[#fc8019]', 'bg-orange-50');
+      el.classList.add('border-[#e9e9eb]');
+    });
+    container.classList.remove('border-[#e9e9eb]');
+    container.classList.add('border-[#fc8019]', 'bg-orange-50');
+  };
+
+  window.saveNewAddress = function() {
+    var label = document.getElementById('new-addr-label').value;
+    var flatNo = document.getElementById('new-addr-flatNo').value.trim();
+    var addr = document.getElementById('new-addr-address').value.trim();
+    var landmark = document.getElementById('new-addr-landmark').value.trim();
+    var pincode = document.getElementById('new-addr-pincode').value.trim();
+
+    // Strict validation
+    if (!label) { alert('Label is required'); return; }
+    if (!flatNo || flatNo.length < 1) { alert('Flat / House No is required'); return; }
+    if (flatNo.length > 50) { alert('Flat / House No must be at most 50 characters'); return; }
+    if (!addr || addr.length < 5) { alert('Address must be at least 5 characters'); return; }
+    if (addr.length > 255) { alert('Address must be at most 255 characters'); return; }
+    if (!landmark || landmark.length < 3) { alert('Landmark must be at least 3 characters'); return; }
+    if (landmark.length > 255) { alert('Landmark must be at most 255 characters'); return; }
+    if (!pincode || !/^[0-9]{5,6}$/.test(pincode)) { alert('Pincode must be 5-6 digits'); return; }
+
+    fetch('/addresses', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ label: label, flatNo: flatNo, address: addr, landmark: landmark, pincode: pincode, isDefault: true })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(saved) {
+      // Add radio button for new address
+      var addrList = document.getElementById('address-list');
+      if (!addrList) {
+        addrList = document.createElement('div');
+        addrList.id = 'address-list';
+        addrList.className = 'space-y-3 mb-4';
+        var addBtn = document.querySelector('[onclick="toggleNewAddress()"]');
+        addBtn.parentNode.insertBefore(addrList, addBtn);
+      }
+      // Uncheck all existing radios
+      addrList.querySelectorAll('input[type="radio"]').forEach(function(r) { r.checked = false; });
+      // Remove bg from existing labels
+      addrList.querySelectorAll('[data-address-id]').forEach(function(el) {
+        el.classList.remove('border-[#fc8019]', 'bg-orange-50');
+        el.classList.add('border-[#e9e9eb]');
+      });
+      // Create new address card
+      var card = document.createElement('label');
+      card.className = 'flex items-start gap-3 p-3 border border-[#fc8019] rounded-lg cursor-pointer hover:border-[#fc8019] transition-colors bg-orange-50';
+      card.setAttribute('data-address-id', saved.id);
+      var detail = [flatNo, addr].filter(Boolean).join(', ');
+      var extra = '';
+      if (landmark) extra += '<p class="text-xs text-[#7e808c]">Landmark: ' + landmark + '</p>';
+      if (pincode) extra += '<p class="text-xs text-[#7e808c]">Pincode: ' + pincode + '</p>';
+      card.innerHTML = '<input type="radio" name="selected-address" value="' + saved.id + '" class="mt-1 accent-[#fc8019]" checked onchange="selectAddress(' + saved.id + ')">' +
+        '<div class="flex-1 min-w-0">' +
+        '<div class="flex items-center gap-2 mb-0.5"><span class="text-xs font-bold text-[#fc8019] uppercase bg-orange-100 px-2 py-0.5 rounded">' + label + '</span><span class="text-[10px] text-gray-400">Default</span></div>' +
+        '<p class="text-sm text-[#3d4152] font-medium">' + detail + '</p>' + extra +
+        '</div>';
+      addrList.appendChild(card);
+      // Set hidden field
+      var fullAddr = [flatNo, addr, landmark, pincode ? 'Pincode: ' + pincode : ''].filter(Boolean).join(', ');
+      document.getElementById('checkout-address-hidden').value = fullAddr;
+      // Hide form
+      toggleNewAddress();
+      // Also update the profile
+      window.dispatchEvent(new CustomEvent('profile-saved', { detail: { flatNo: flatNo, address: addr, landmark: landmark, pincode: pincode } }));
+    })
+    .catch(function() { alert('Failed to save address'); });
+  };
+
+  // Set initial hidden address value from default address
+  var defaultRadio = document.querySelector('input[name="selected-address"]:checked');
+  if (defaultRadio) {
+    var container = defaultRadio.closest('[data-address-id]');
+    if (container) {
+      var allPs = container.querySelectorAll('p');
+      var parts = [];
+      allPs.forEach(function(p) { parts.push(p.textContent); });
+      document.getElementById('checkout-address-hidden').value = parts.join(', ');
+    }
+  }
+
+  // Listen for real-time profile updates from edit profile modal
+  window.addEventListener('profile-saved', function(e) {
+    var d = e.detail;
+    if (!d) return;
+    // Update hidden address field
+    var fullAddr = [d.flatNo, d.address, d.landmark, d.pincode ? 'Pincode: ' + d.pincode : ''].filter(Boolean).join(', ');
+    var hiddenAddr = document.getElementById('checkout-address-hidden');
+    if (hiddenAddr) hiddenAddr.value = fullAddr;
+    // Update display box
+    var displayBox = document.getElementById('address-display-box');
+    if (displayBox) {
+      var html = '<div class="flex items-start justify-between"><div class="flex items-start gap-3">' +
+        '<svg class="w-5 h-5 text-[#fc8019] mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>' +
+        '<div><h3 class="font-bold text-[#3d4152] text-[15px] mb-1">Delivering to</h3>' +
+        '<div class="text-[13px] text-[#7e808c] space-y-0.5">';
+      if (d.flatNo) html += '<p class="font-medium text-[#3d4152]">' + d.flatNo + '</p>';
+      if (d.address) html += '<p>' + d.address + '</p>';
+      if (d.landmark) html += '<p>Landmark: ' + d.landmark + '</p>';
+      if (d.pincode) html += '<p>Pincode: ' + d.pincode + '</p>';
+      html += '</div></div></div>' +
+        '<button type="button" onclick="openProfileModal()" class="text-[#60b246] font-bold text-[13px] uppercase tracking-wider hover:text-green-700 transition-colors shrink-0">Change</button>' +
+        '</div>';
+      displayBox.innerHTML = html;
+    }
+  });
+})();
+</script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<%- include('../partials/footer') %>

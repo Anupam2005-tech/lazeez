@@ -1,0 +1,143 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* Hide scrollbar globally */
+* {
+  scrollbar-width: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}
+
+html, body {
+  font-family: 'Inter', sans-serif;
+  background-color: #ffffff;
+  color: #3d4152; /* Swiggy dark gray text */
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  -ms-overflow-style: none;
+}
+
+/* Custom Webkit Scrollbar (hidden) */
+
+/* Swiggy utilities */
+.brand-orange {
+  color: #fc8019;
+}
+.bg-brand-orange {
+  background-color: #fc8019;
+}
+
+/* Base link reset */
+a {
+  text-decoration: none;
+}
+
+/* Subtle border color */
+.border-subtle {
+  border-color: #e9e9eb;
+}
+
+/* ADD Button specific */
+.btn-add {
+  background: #ffffff;
+  color: #1ba672;
+  border: 1px solid #1ba672;
+  border-radius: 6px;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+.btn-add:hover {
+  background: #1ba672;
+  color: #ffffff;
+}
+
+/* Text truncation */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;  
+  overflow: hidden;
+}
+
+/* Navbar shadow */
+.swiggy-nav-shadow {
+  box-shadow: 0 15px 40px -20px rgba(40,44,63,.15);
+}
+
+/* ===== Custom Select Dropdown ===== */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236b7280' viewBox='0 0 16 16'%3E%3Cpath d='M4.646 6.646a.5.5 0 0 1 .708 0L8 9.293l2.646-2.647a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-3-3a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 14px;
+  padding-right: 2.25rem !important;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+select:hover {
+  border-color: #d1d5db;
+}
+
+select:focus {
+  border-color: #fc8019;
+  box-shadow: 0 0 0 3px rgba(252, 128, 25, 0.1);
+}
+
+select optgroup {
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+  padding: 8px 12px;
+  background: #f9fafb;
+}
+
+select option {
+  font-weight: 400;
+  font-size: 13px;
+  padding: 8px 12px;
+  color: #374151;
+}
+
+select option:hover,
+select option:checked {
+  background: #fff7ed;
+  color: #ea580c;
+}
+
+/* Button Loading State */
+.btn-loading {
+  position: relative !important;
+  color: transparent !important;
+  pointer-events: none !important;
+}
+
+.btn-loading::after {
+  content: "";
+  position: absolute;
+  width: 1.25rem;
+  height: 1.25rem;
+  top: calc(50% - 0.625rem);
+  left: calc(50% - 0.625rem);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: currentColor;
+  animation: btn-spin 0.6s linear infinite;
+}
+
+/* Dark variant for white buttons with green/orange text */
+.btn-loading-dark::after {
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-top-color: currentColor;
+}
+
+@keyframes btn-spin {
+  to { transform: rotate(360deg); }
+}

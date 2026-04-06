@@ -1,0 +1,139 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id          String   @id @default(uuid()) @db.Uuid
+  firebaseUid String   @unique
+  email       String?
+  phone       String?
+  name        String?
+  password    String?                       // bcrypt hash for local auth (offline)
+  role        String   @default("customer") // "customer" | "admin"
+  flatNo      String?                       // flat/house number
+  landmark    String?                       // landmark
+  pincode     String?                       // pincode
+  address     String?                       // full address text
+  lat         Float?                        // latitude
+  lng         Float?                        // longitude
+  razorpayCustomerId String?                // Razorpay customer ID for saved payments
+  createdAt   DateTime @default(now())
+  orders      Order[]
+  feedbacks   Feedback[]
+  savedAddresses SavedAddress[]
+}
+
+model Category {
+  id        String     @id @default(uuid()) @db.Uuid
+  name      String     @unique
+  image     String?    // category image for storefront display
+  menuItems MenuItem[]
+}
+
+model MenuItem {
+  id          String     @id @default(uuid()) @db.Uuid
+  uid         String     @unique
+  name        String
+  description String?
+  price       Float
+  image       String?    // relative path under /public/uploads or base64
+  available   Boolean    @default(true)
+  isVeg       Boolean    @default(true)      // admin-controlled diet flag
+  isBestSeller Boolean   @default(false)     // admin-controlled popularity flag
+  categoryId  String     @db.Uuid
+  category    Category   @relation(fields: [categoryId], references: [id])
+  createdAt   DateTime   @default(now())
+  orderItems  OrderItem[]
+}
+
+model Order {
+  id           String      @id @default(uuid()) @db.Uuid
+  userId       String      @db.Uuid
+  user         User        @relation(fields: [userId], references: [id])
+  status       String      @default("Pending")  // Pending|Preparing|Ready|Delivered|Cancelled
+  itemTotal    Float       @default(0)    // sum of (unitPrice * quantity) for all items
+  deliveryFee  Float       @default(0)    // distance-based delivery fee
+  platformFee  Float       @default(0)    // platform/service fee
+  totalAmount  Float                      // grand total = itemTotal + deliveryFee + platformFee
+  paymentMethod String     @default("Online")       // Online (Razorpay)
+  paymentStatus String     @default("Pending")   // Pending|Paid|Failed
+  razorpayOrderId         String?
+  razorpayPaymentId       String?
+  razorpaySignature       String?
+  razorpayRefundId        String?
+  paymentTimestamp        DateTime?
+  address      String?
+  customerName String?
+  customerPhone String?
+  suggestions  String?                      // delivery instructions
+  dineIn       Boolean     @default(false)
+  cancelReason String?
+  refundStatus String?                      // null | "Pending" | "Completed"
+  createdAt    DateTime    @default(now())
+  items        OrderItem[]
+  feedback     Feedback[]
+}
+
+model OrderItem {
+  id         String   @id @default(uuid()) @db.Uuid
+  orderId    String   @db.Uuid
+  order      Order    @relation(fields: [orderId], references: [id])
+  menuItemId String   @db.Uuid
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+  quantity   Int
+  unitPrice  Float
+}
+
+model Feedback {
+  id          String   @id @default(uuid()) @db.Uuid
+  orderId     String   @db.Uuid
+  order       Order    @relation(fields: [orderId], references: [id])
+  userId      String   @db.Uuid
+  user        User     @relation(fields: [userId], references: [id])
+  foodRating  Int      // 1-5 stars
+  storeRating Int      // 1-5 stars
+  comment     String?
+  createdAt   DateTime @default(now())
+
+  @@unique([orderId, userId])
+}
+
+model Offer {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String
+  description String?
+  image       String?
+  dishName    String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+model Setting {
+  id    String @id @default(uuid()) @db.Uuid
+  key   String @unique
+  value String
+}
+
+model SavedAddress {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id])
+  label     String   // e.g., "Home", "Work", "Other"
+  flatNo    String?
+  address   String
+  landmark  String?
+  pincode   String?
+  lat       Float?
+  lng       Float?
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+}

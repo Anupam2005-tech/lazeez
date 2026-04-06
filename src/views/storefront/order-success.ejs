@@ -1,0 +1,32 @@
+<%- include('../partials/header') %>
+
+<div class="min-h-[80vh] flex flex-col items-center justify-center bg-white px-4 text-center">
+  
+  <div class="w-24 h-24 bg-green-50 rounded-full flex items-center justify-center mb-6">
+    <svg class="w-12 h-12 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+  </div>
+  
+  <h1 class="text-3xl font-extrabold text-[#282c3f] tracking-tight mb-2">Order placed!</h1>
+  <p class="text-[#686b78] text-[15px] max-w-sm mb-2">
+    Your delicious food is being prepared. It will be delivered shortly.
+  </p>
+  <% if (order && order.paymentStatus === 'Paid') { %>
+    <p class="text-xs text-green-600 font-semibold flex items-center gap-1 mb-6">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      Payment confirmed via Stripe
+    </p>
+  <% } else { %>
+    <div class="mb-6"></div>
+  <% } %>
+
+  <div class="border border-[#e9e9eb] p-4 text-[14px] text-left w-full max-w-[320px] mb-8 bg-gray-50 flex justify-between items-center shadow-sm">
+    <span class="font-bold text-[#3d4152]">Order #<%= order.id %></span>
+    <span class="text-[#282c3f] font-bold">₹<%= order.totalAmount.toFixed(2) %></span>
+  </div>
+
+  <a href="/orders/<%= order.id %>" class="bg-[#fc8019] text-white px-8 py-3.5 font-bold uppercase tracking-wider text-[14px] hover:shadow-md transition-shadow">
+    Track Order
+  </a>
+</div>
+
+<%- include('../partials/footer') %>

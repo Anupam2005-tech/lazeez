@@ -1,0 +1,568 @@
+<%- include('../partials/header') %>
+
+<div class="max-w-[800px] mx-auto px-4 py-8" x-data="orderDetail()">
+  
+  <!-- Back Button -->
+  <a href="/orders" class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-sm border border-[#e9e9eb] text-[#686b78] hover:text-[#fc8019] mb-6 transition-all active:scale-95">
+    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+    </svg>
+  </a>
+
+  <% 
+    let statusColor = 'bg-gray-100 text-gray-700';
+    let statusDot = 'bg-gray-400';
+    if (order.status === 'Pending') { statusColor = 'bg-yellow-50 text-yellow-700'; statusDot = 'bg-yellow-400'; }
+    if (order.status === 'Preparing') { statusColor = 'bg-blue-50 text-blue-700'; statusDot = 'bg-blue-400'; }
+    if (order.status === 'Ready') { statusColor = 'bg-indigo-50 text-indigo-700'; statusDot = 'bg-indigo-400'; }
+    if (order.status === 'Delivered') { statusColor = 'bg-green-50 text-green-700'; statusDot = 'bg-green-400'; }
+    if (order.status === 'Cancelled') { statusColor = 'bg-red-50 text-red-700'; statusDot = 'bg-red-400'; }
+    
+    const orderDate = new Date(order.createdAt);
+    const dateStr = orderDate.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    const timeStr = orderDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+    const hasFeedback = order.feedback && order.feedback.length > 0;
+    const canReview = order.status === 'Delivered' && !hasFeedback;
+  %>
+
+  <!-- Order Status Card -->
+  <div class="bg-white rounded-2xl shadow-sm border border-[#e9e9eb] p-5 mb-4">
+    <div class="flex items-center justify-between mb-4">
+      <h1 class="text-xl font-bold text-[#282c3f]">Order #<%= order.id %></h1>
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-bold <%= statusColor %> px-3 py-1 rounded-full flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full <%= statusDot %>"></span>
+          <%= order.status %>
+        </span>
+        <% if (['Pending', 'Preparing'].includes(order.status)) { %>
+          <span id="cancel-order-wrapper">
+            <button onclick="cancelOrder('<%= order.id %>')" id="cancel-order-btn" class="text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1 rounded-full border border-red-200 transition-colors">
+              Cancel
+            </button>
+          </span>
+        <% } %>
+      </div>
+    </div>
+    
+    <!-- Order Timeline -->
+    <div class="relative pl-6 border-l-2 border-[#e9e9eb] space-y-4">
+      <div class="relative">
+        <div class="absolute -left-[26px] w-4 h-4 rounded-full bg-green-400 border-2 border-white"></div>
+        <p class="text-sm font-semibold text-[#282c3f]">Order Placed</p>
+        <p class="text-xs text-[#7e808c]"><%= dateStr %> at <%= timeStr %></p>
+      </div>
+      
+      <% if (order.status !== 'Cancelled') { %>
+        <div class="relative">
+          <div class="absolute -left-[26px] w-4 h-4 rounded-full <%= ['Preparing', 'Ready', 'Delivered'].includes(order.status) ? 'bg-green-400' : 'bg-gray-200' %> border-2 border-white"></div>
+          <p class="text-sm font-semibold <%= ['Preparing', 'Ready', 'Delivered'].includes(order.status) ? 'text-[#282c3f]' : 'text-gray-400' %>">Preparing</p>
+          <p class="text-xs text-[#7e808c]">Your food is being prepared</p>
+        </div>
+        
+        <div class="relative">
+          <div class="absolute -left-[26px] w-4 h-4 rounded-full <%= ['Ready', 'Delivered'].includes(order.status) ? 'bg-green-400' : 'bg-gray-200' %> border-2 border-white"></div>
+          <p class="text-sm font-semibold <%= ['Ready', 'Delivered'].includes(order.status) ? 'text-[#282c3f]' : 'text-gray-400' %>">Ready</p>
+          <p class="text-xs text-[#7e808c]">Your order is ready</p>
+        </div>
+        
+        <div class="relative">
+          <div class="absolute -left-[26px] w-4 h-4 rounded-full <%= order.status === 'Delivered' ? 'bg-green-400' : 'bg-gray-200' %> border-2 border-white"></div>
+          <p class="text-sm font-semibold <%= order.status === 'Delivered' ? 'text-[#282c3f]' : 'text-gray-400' %>">Delivered</p>
+          <p class="text-xs text-[#7e808c]">Enjoy your meal!</p>
+        </div>
+      <% } else { %>
+        <div class="relative">
+          <div class="absolute -left-[26px] w-4 h-4 rounded-full bg-red-400 border-2 border-white"></div>
+          <p class="text-sm font-semibold text-red-600">Cancelled</p>
+          <p class="text-xs text-red-500"><%= order.cancelReason || 'Order was cancelled' %></p>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Items Ordered -->
+  <div class="bg-white rounded-2xl shadow-sm border border-[#e9e9eb] p-5 mb-4">
+    <h2 class="text-base font-bold text-[#282c3f] mb-4">Items Ordered</h2>
+    <div class="space-y-3">
+      <% order.items.forEach(item => { %>
+        <div class="flex items-center justify-between py-2 border-b border-[#f1f1f6] last:border-0">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden shrink-0">
+              <% if (item.menuItem && item.menuItem.image) { %>
+                <img src="<%= item.menuItem.image %>" class="w-full h-full object-cover">
+              <% } else { %>
+                <div class="w-full h-full bg-orange-100 flex items-center justify-center">
+                  <span class="text-orange-300 text-lg">🍽</span>
+                </div>
+              <% } %>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-[#282c3f]"><%= item.menuItem ? item.menuItem.name : 'Item' %></p>
+              <p class="text-xs text-[#7e808c]">Qty: <%= item.quantity %></p>
+            </div>
+          </div>
+          <span class="text-sm font-bold text-[#282c3f]">&#8377;<%= (item.unitPrice * item.quantity).toFixed(2) %></span>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+
+  <!-- Order Info -->
+  <div class="bg-white rounded-2xl shadow-sm border border-[#e9e9eb] p-5 mb-4">
+    <h2 class="text-base font-bold text-[#282c3f] mb-4">Order Info</h2>
+    <div class="space-y-3 text-sm">
+      <div class="flex justify-between">
+        <span class="text-[#7e808c]">Order Type</span>
+        <span class="font-semibold text-[#282c3f]"><%= order.dineIn ? 'Dine-in' : 'Delivery' %></span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-[#7e808c]">Payment Method</span>
+        <span class="font-semibold text-[#282c3f]"><%= order.paymentMethod === 'COD' ? 'Cash on Delivery' : 'Online Payment' %></span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-[#7e808c]">Payment Status</span>
+        <span class="font-semibold <%= order.paymentStatus === 'Paid' ? 'text-green-600' : 'text-yellow-600' %>">
+          <%= order.paymentStatus === 'Paid' ? 'Paid' : (order.paymentMethod === 'COD' ? 'Pay on Delivery' : 'Pending') %>
+        </span>
+      </div>
+      <% if (order.customerName) { %>
+        <div class="flex justify-between">
+          <span class="text-[#7e808c]">Name</span>
+          <span class="font-semibold text-[#282c3f]"><%= order.customerName %></span>
+        </div>
+      <% } %>
+      <% if (order.customerPhone) { %>
+        <div class="flex justify-between">
+          <span class="text-[#7e808c]">Phone</span>
+          <span class="font-semibold text-[#282c3f]"><%= order.customerPhone %></span>
+        </div>
+      <% } %>
+      <% if (!order.dineIn && order.address) { %>
+        <div class="flex justify-between items-start">
+          <span class="text-[#7e808c]">Delivery Address</span>
+          <span class="font-semibold text-[#282c3f] text-right max-w-[60%]"><%= order.address %></span>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Bill Details -->
+  <div class="bg-white rounded-2xl shadow-sm border border-[#e9e9eb] p-5 mb-4">
+    <h2 class="text-base font-bold text-[#282c3f] mb-4">Bill Details</h2>
+    <div class="space-y-2 text-sm border-b border-[#e9e9eb] pb-3">
+      <div class="flex justify-between">
+        <span class="text-[#7e808c]">Item Total</span>
+        <span class="text-[#282c3f]">&#8377;<%= (order.itemTotal || order.items.reduce((s, i) => s + i.unitPrice * i.quantity, 0)).toFixed(2) %></span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-[#7e808c]">Delivery Fee</span>
+        <% if (order.dineIn) { %>
+          <span class="text-[#7e808c]">N/A (Dine-in)</span>
+        <% } else if (order.deliveryFee > 0) { %>
+          <span class="text-[#282c3f]">&#8377;<%= order.deliveryFee.toFixed(2) %></span>
+        <% } else { %>
+          <span class="text-green-600 font-medium">FREE</span>
+        <% } %>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-[#7e808c]">Platform Fee</span>
+        <span class="text-[#282c3f]">&#8377;<%= (order.platformFee || 0).toFixed(2) %></span>
+      </div>
+    </div>
+    <div class="flex justify-between pt-3">
+      <span class="font-bold text-[#282c3f]">Total Paid</span>
+      <span class="font-bold text-[#282c3f]">&#8377;<%= order.totalAmount.toFixed(2) %></span>
+    </div>
+  </div>
+
+  <!-- Feedback Section -->
+  <% if (canReview) { %>
+    <!-- Feedback Form (only for delivered orders without feedback) -->
+    <div class="bg-white rounded-2xl shadow-sm border border-[#e9e9eb] p-5 mb-4" id="feedback-form">
+      <h2 class="text-base font-bold text-[#282c3f] mb-4">Rate Your Experience</h2>
+      
+      <div x-show="!submitted" x-cloak>
+        <!-- Food Rating -->
+        <div class="mb-5">
+          <label class="text-sm font-semibold text-[#282c3f] block mb-2">Rate the Food</label>
+          <div class="flex gap-1">
+            <template x-for="star in [1,2,3,4,5]" :key="star">
+              <button 
+                type="button"
+                @click="foodRating = star"
+                class="w-10 h-10 rounded-lg transition-all duration-150 flex items-center justify-center"
+                :class="star <= foodRating ? 'bg-yellow-50 border-2 border-yellow-300' : 'bg-gray-50 border-2 border-gray-200'"
+              >
+                <svg class="w-6 h-6" :class="star <= foodRating ? 'text-yellow-400' : 'text-gray-300'" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                </svg>
+              </button>
+            </template>
+          </div>
+          <p class="text-xs text-[#7e808c] mt-1" x-text="foodRating > 0 ? ['','Poor','Below Average','Good','Very Good','Excellent'][foodRating] : 'Tap to rate'"></p>
+        </div>
+
+        <!-- Store Rating -->
+        <div class="mb-5">
+          <label class="text-sm font-semibold text-[#282c3f] block mb-2">Rate the Store</label>
+          <div class="flex gap-1">
+            <template x-for="star in [1,2,3,4,5]" :key="star">
+              <button 
+                type="button"
+                @click="storeRating = star"
+                class="w-10 h-10 rounded-lg transition-all duration-150 flex items-center justify-center"
+                :class="star <= storeRating ? 'bg-yellow-50 border-2 border-yellow-300' : 'bg-gray-50 border-2 border-gray-200'"
+              >
+                <svg class="w-6 h-6" :class="star <= storeRating ? 'text-yellow-400' : 'text-gray-300'" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                </svg>
+              </button>
+            </template>
+          </div>
+          <p class="text-xs text-[#7e808c] mt-1" x-text="storeRating > 0 ? ['','Poor','Below Average','Good','Very Good','Excellent'][storeRating] : 'Tap to rate'"></p>
+        </div>
+
+        <!-- Comment -->
+        <div class="mb-5">
+          <label class="text-sm font-semibold text-[#282c3f] block mb-2">Tell us about your experience (optional)</label>
+          <textarea 
+            x-model="comment"
+            rows="3"
+            placeholder="How was the food? Any suggestions for the restaurant?"
+            class="w-full border border-[#e9e9eb] rounded-xl px-4 py-3 text-sm text-[#282c3f] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 resize-none"
+          ></textarea>
+        </div>
+
+        <!-- Submit Button -->
+        <button 
+          type="button"
+          @click="submitFeedback('<%= order.id %>')"
+          :disabled="foodRating === 0 || storeRating === 0 || loading"
+          class="w-full bg-[#60b246] hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl text-sm transition-colors"
+        >
+          <span x-show="!loading">Submit Review</span>
+          <span x-show="loading">Submitting...</span>
+        </button>
+
+        <p x-show="error" x-text="error" class="text-red-500 text-xs mt-2 text-center"></p>
+      </div>
+
+      <!-- Success State -->
+      <div x-show="submitted" class="text-center py-6">
+        <div class="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-3">
+          <svg class="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-bold text-[#282c3f] mb-1">Thank you!</h3>
+        <p class="text-sm text-[#7e808c]">Your feedback helps us improve.</p>
+      </div>
+    </div>
+  <% } else if (hasFeedback) { %>
+    <!-- Already Submitted Feedback -->
+    <div class="bg-white rounded-2xl shadow-sm border border-[#e9e9eb] p-5 mb-4">
+      <h2 class="text-base font-bold text-[#282c3f] mb-4">Your Review</h2>
+      <% const fb = order.feedback[0]; %>
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-[#7e808c]">Food Rating</span>
+          <div class="flex gap-0.5">
+            <% for (let i = 1; i <= 5; i++) { %>
+              <svg class="w-5 h-5 <%= i <= fb.foodRating ? 'text-yellow-400' : 'text-gray-200' %>" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+              </svg>
+            <% } %>
+          </div>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-[#7e808c]">Store Rating</span>
+          <div class="flex gap-0.5">
+            <% for (let i = 1; i <= 5; i++) { %>
+              <svg class="w-5 h-5 <%= i <= fb.storeRating ? 'text-yellow-400' : 'text-gray-200' %>" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+              </svg>
+            <% } %>
+          </div>
+        </div>
+        <% if (fb.comment) { %>
+          <div class="pt-2 border-t border-[#e9e9eb]">
+            <p class="text-sm text-[#686b78]"><%= fb.comment %></p>
+          </div>
+        <% } %>
+        <p class="text-xs text-[#93959f]">Submitted on <%= new Date(fb.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) %></p>
+      </div>
+    </div>
+  <% } else if (order.status === 'Cancelled') { %>
+    <!-- Cancelled Order - No Feedback -->
+    <div class="bg-red-50 rounded-2xl border border-red-200 p-5 mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+          <svg class="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm font-semibold text-red-700">Order Cancelled</p>
+          <p class="text-xs text-red-600"><%= order.cancelReason || 'This order was cancelled.' %></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Refund Status (only for online paid orders) -->
+    <% if (order.paymentMethod === 'Online' && order.paymentStatus === 'Paid' && order.refundStatus) { %>
+      <div class="<%= order.refundStatus === 'Completed' ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200' %> rounded-2xl border p-5 mb-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 <%= order.refundStatus === 'Completed' ? 'bg-green-100' : 'bg-amber-100' %> rounded-full flex items-center justify-center">
+            <% if (order.refundStatus === 'Completed') { %>
+              <svg class="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+              </svg>
+            <% } else { %>
+              <svg class="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V7m0 1v8m0 0v1"/>
+              </svg>
+            <% } %>
+          </div>
+          <div>
+            <p class="text-sm font-semibold <%= order.refundStatus === 'Completed' ? 'text-green-700' : 'text-amber-700' %>">
+              Refund <%= order.refundStatus === 'Completed' ? 'Completed' : 'Pending' %>
+            </p>
+            <p class="text-xs <%= order.refundStatus === 'Completed' ? 'text-green-600' : 'text-amber-600' %>">
+              <% if (order.refundStatus === 'Completed') { %>
+                Refund of \u20B9<%= order.totalAmount.toFixed(2) %> has been transferred to your account.
+              <% } else { %>
+                Refund of \u20B9<%= order.totalAmount.toFixed(2) %> is being processed. You will be notified once transferred.
+              <% } %>
+            </p>
+          </div>
+        </div>
+      </div>
+    <% } %>
+  <% } else if (order.status !== 'Delivered') { %>
+    <!-- Order Not Yet Delivered -->
+    <div class="bg-blue-50 rounded-2xl border border-blue-200 p-5 mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+          <svg class="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm font-semibold text-blue-700">Order in Progress</p>
+          <p class="text-xs text-blue-600">You can rate this order after it's delivered.</p>
+        </div>
+      </div>
+    </div>
+  <% } %>
+
+</div>
+
+<script>
+function orderDetail() {
+  return {
+    foodRating: 0,
+    storeRating: 0,
+    comment: '',
+    loading: false,
+    submitted: false,
+    error: '',
+    
+    submitFeedback: async function(orderId) {
+      if (this.foodRating === 0 || this.storeRating === 0) {
+        this.error = 'Please select both ratings';
+        return;
+      }
+      
+      this.loading = true;
+      this.error = '';
+      
+      try {
+        const res = await fetch('/orders/' + orderId + '/feedback', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            foodRating: this.foodRating,
+            storeRating: this.storeRating,
+            comment: this.comment
+          })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          this.submitted = true;
+        } else {
+          this.error = data.error || 'Failed to submit feedback';
+        }
+      } catch (e) {
+        this.error = 'Network error. Please try again.';
+      }
+      
+      this.loading = false;
+    }
+  };
+}
+
+async function cancelOrder(orderId) {
+  var ok = await RestoConfirm.show({title:'Cancel Order?',message:'Are you sure you want to cancel this order? This cannot be undone.',confirmText:'Cancel Order'});
+  if (!ok) return;
+  var btn = document.getElementById('cancel-order-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Cancelling...'; }
+  try {
+    var res = await fetch('/orders/' + orderId + '/cancel', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
+    });
+    var data = await res.json();
+    if (data.success) {
+      location.reload();
+    } else {
+      alert(data.error || 'Failed to cancel order');
+      if (btn) { btn.disabled = false; btn.textContent = 'Cancel'; }
+    }
+  } catch (e) {
+    alert('Network error. Please try again.');
+    if (btn) { btn.disabled = false; btn.textContent = 'Cancel'; }
+  }
+}
+
+// Disable cancel button after 61 seconds of order placement
+(function() {
+  var wrapper = document.getElementById('cancel-order-wrapper');
+  if (!wrapper) return;
+  var orderDate = new Date('<%= order.createdAt.toISOString() %>');
+  var elapsed = (Date.now() - orderDate.getTime()) / 1000;
+  if (elapsed >= 61) {
+    wrapper.innerHTML = '<span class="text-[10px] text-gray-400 font-medium italic">Cannot cancel order </span>';
+  } else {
+    var remaining = Math.ceil(61 - elapsed);
+    var btn = document.getElementById('cancel-order-btn');
+    if (btn) {
+      btn.title = 'Cancel available for ' + remaining + ' more seconds';
+    }
+    setTimeout(function() {
+      wrapper.innerHTML = '<span class="text-[10px] text-gray-400 font-medium italic">Cannot cancel order</span>';
+    }, (61 - elapsed) * 1000);
+  }
+})();
+
+// Real-time order status updates via Response Partialing
+(function() {
+  var currentOrderId = '<%= order.id %>';
+
+  var statusColors = {
+    'Pending': { bg: 'bg-yellow-50', text: 'text-yellow-700', dot: 'bg-yellow-400' },
+    'Preparing': { bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-400' },
+    'Ready': { bg: 'bg-indigo-50', text: 'text-indigo-700', dot: 'bg-indigo-400' },
+    'Delivered': { bg: 'bg-green-50', text: 'text-green-700', dot: 'bg-green-400' },
+    'Cancelled': { bg: 'bg-red-50', text: 'text-red-700', dot: 'bg-red-400' }
+  };
+
+  var timelineSteps = ['Preparing', 'Ready', 'Delivered'];
+
+  function showNotification(msg) {
+    var n = document.createElement('div');
+    n.className = 'fixed top-4 right-4 z-[9999] bg-gray-900 text-white px-4 py-3 rounded-lg shadow-lg text-sm font-medium';
+    n.style.transition = 'opacity 0.3s';
+    n.textContent = msg;
+    document.body.appendChild(n);
+    setTimeout(function() { n.style.opacity = '0'; setTimeout(function() { n.remove(); }, 300); }, 4000);
+  }
+
+  // Partial DOM update: patch status badge, timeline, and cancel button
+  function patchStatus(data) {
+    var colors = statusColors[data.status] || statusColors['Pending'];
+
+    // Update the status badge in header
+    var badges = document.querySelectorAll('[class*="rounded-full"][class*="font-bold"]');
+    badges.forEach(function(badge) {
+      // Find the badge that contains a status dot (the order status badge)
+      var dot = badge.querySelector('span[class*="rounded-full"]');
+      if (dot && badge.closest('.flex.items-center.justify-between')) {
+        badge.className = 'text-xs font-bold ' + colors.bg + ' ' + colors.text + ' px-3 py-1 rounded-full flex items-center gap-1.5';
+        dot.className = 'w-1.5 h-1.5 rounded-full ' + colors.dot;
+        // Update text node (after the dot span)
+        var textNodes = [];
+        badge.childNodes.forEach(function(node) {
+          if (node.nodeType === 3 && node.textContent.trim()) textNodes.push(node);
+        });
+        if (textNodes.length > 0) {
+          textNodes[textNodes.length - 1].textContent = '\n          ' + data.status + '\n        ';
+        }
+      }
+    });
+
+    // Update timeline dots
+    var timelineDots = document.querySelectorAll('.border-l-2 .absolute.-left-\\[26px\\], .border-l-2 [class*="-left-[26px]"]');
+    // Fallback: find all dots in the timeline section
+    var timeline = document.querySelector('.border-l-2.border-\\[\\#e9e9eb\\]');
+    if (timeline) {
+      var steps = timeline.querySelectorAll('.relative');
+      // Step 0 = Order Placed (always green)
+      // Step 1 = Preparing, Step 2 = Ready, Step 3 = Delivered
+      var stageIndex = timelineSteps.indexOf(data.status);
+      steps.forEach(function(step, i) {
+        if (i === 0) return; // Order Placed - always green
+        var dot = step.querySelector('[class*="-left-"]');
+        var label = step.querySelector('p:first-of-type');
+        if (dot) {
+          if (data.status === 'Cancelled') {
+            dot.className = dot.className.replace(/bg-\w+-\d+/g, '') + ' bg-red-400';
+          } else if (i <= stageIndex + 1) {
+            dot.className = dot.className.replace(/bg-gray-200|bg-\w+-\d+/g, '') + ' bg-green-400';
+          }
+        }
+        if (label && data.status !== 'Cancelled') {
+          if (i <= stageIndex + 1) {
+            label.className = label.className.replace('text-gray-400', 'text-[#282c3f]');
+          }
+        }
+      });
+    }
+
+    // Hide cancel button if no longer cancellable
+    if (!['Pending', 'Preparing'].includes(data.status)) {
+      var cancelWrapper = document.getElementById('cancel-order-wrapper');
+      if (cancelWrapper) cancelWrapper.remove();
+    }
+
+    showNotification('Order updated: ' + data.status);
+  }
+
+  // Fetch lightweight partial JSON instead of full page reload
+  async function fetchAndPatch() {
+    try {
+      var res = await fetch('/orders/' + currentOrderId + '/api/status', {
+        headers: { 'Accept': 'application/json' }
+      });
+      if (res.ok) {
+        var data = await res.json();
+        patchStatus(data);
+      }
+    } catch (e) {
+      // Fallback to reload on network error
+      location.reload();
+    }
+  }
+
+  function init() {
+    if (!window.RestoRealtime) { setTimeout(init, 500); return; }
+    window.RestoRealtime.on('order:status', function(data) {
+      if (String(data.orderId) === String(currentOrderId)) {
+        fetchAndPatch();
+      }
+    });
+    window.RestoRealtime.on('order:cancel', function(data) {
+      if (String(data.orderId) === String(currentOrderId)) {
+        fetchAndPatch();
+      }
+    });
+  }
+  init();
+})();
+</script>
+
+<%- include('../partials/footer') %>

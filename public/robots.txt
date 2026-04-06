@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+Allow: /menu
+Allow: /category/
+Allow: /item/
+Allow: /offers
+
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /cart
+Disallow: /checkout
+Disallow: /orders
+Disallow: /addresses
+Disallow: /razorpay
+Disallow: /api/
+Disallow: /events
+
+Sitemap: https://lazeez.com/sitemap.xml

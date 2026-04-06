@@ -1,0 +1,148 @@
+<div class="mb-4 sm:mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+  <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Orders</h2>
+  
+  <div class="flex gap-2 items-center w-full sm:w-auto">
+    <select id="orders-status-filter" class="bg-white border text-xs sm:text-sm rounded-lg px-3 py-2 shadow-sm focus:outline-none focus:ring-indigo-500 flex-1 sm:flex-none" onchange="filterOrders(this.value)">
+      <option value="All" <%= currentStatus === 'All' ? 'selected' : '' %>>All Statuses</option>
+      <option value="Pending" <%= currentStatus === 'Pending' ? 'selected' : '' %>>Pending</option>
+      <option value="Preparing" <%= currentStatus === 'Preparing' ? 'selected' : '' %>>Preparing</option>
+      <option value="Ready" <%= currentStatus === 'Ready' ? 'selected' : '' %>>Ready</option>
+      <option value="Delivered" <%= currentStatus === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+      <option value="Cancelled" <%= currentStatus === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+    </select>
+    <span id="orders-loading" class="text-xs text-gray-400 hidden">Loading...</span>
+  </div>
+</div>
+
+<div class="bg-white shadow overflow-x-auto sm:rounded-lg border">
+  <table class="min-w-full divide-y divide-gray-200">
+    <thead class="bg-gray-50">
+      <tr>
+        <th scope="col" class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order</th>
+        <th scope="col" class="hidden sm:table-cell px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+        <th scope="col" class="hidden md:table-cell px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+        <th scope="col" class="hidden lg:table-cell px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+        <th scope="col" class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+        <th scope="col" class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+        <th scope="col" class="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">View</th>
+      </tr>
+    </thead>
+    <tbody id="orders-tbody" class="bg-white divide-y divide-gray-200">
+      <% if (orders.length === 0) { %>
+        <tr>
+          <td colspan="7" class="px-6 py-10 text-center text-sm text-gray-500">No orders found.</td>
+        </tr>
+      <% } %>
+      
+      <% orders.forEach(order => { %>
+        <% 
+           const date = new Date(order.createdAt).toLocaleString(); 
+           let statusColor = 'bg-gray-100 text-gray-800';
+           if(order.status === 'Pending') statusColor = 'bg-yellow-100 text-yellow-800';
+           if(order.status === 'Preparing') statusColor = 'bg-blue-100 text-blue-800';
+           if(order.status === 'Ready') statusColor = 'bg-indigo-100 text-indigo-800';
+           if(order.status === 'Delivered') statusColor = 'bg-green-100 text-green-800';
+           if(order.status === 'Cancelled') statusColor = 'bg-red-100 text-red-800';
+        %>
+        <tr class="hover:bg-gray-50 cursor-pointer" data-order-id="<%= order.id %>" onclick="window.location.href='/admin/orders/<%= order.id %>'">
+          <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm font-bold text-gray-900">#<%= order.id %></td>
+          <td class="hidden sm:table-cell px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-500"><%= date %></td>
+          <td class="hidden md:table-cell px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900"><%= order.user.name || order.user.email || 'Guest' %></td>
+          <td class="hidden lg:table-cell px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-500"><%= order.dineIn ? 'Dine-in' : 'Delivery' %></td>
+          <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm font-medium text-gray-900">₹<%= order.totalAmount.toFixed(2) %></td>
+          <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full status-badge <%= statusColor %>">
+              <%= order.status %>
+            </span>
+          </td>
+          <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-right text-sm font-medium">
+            <a href="/admin/orders/<%= order.id %>" class="text-indigo-600 hover:text-indigo-900">&rarr;</a>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+
+<script>
+// AJAX order filter
+function filterOrders(status) {
+  var loadingEl = document.getElementById('orders-loading');
+  var tbody = document.getElementById('orders-tbody');
+  if (loadingEl) loadingEl.classList.remove('hidden');
+  fetch('/admin/api/orders?status=' + encodeURIComponent(status))
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      tbody.innerHTML = data.html;
+      if (loadingEl) loadingEl.classList.add('hidden');
+    })
+    .catch(function() { if (loadingEl) loadingEl.classList.add('hidden'); });
+}
+
+(function() {
+  var statusColors = {
+    'Pending': 'bg-yellow-100 text-yellow-800',
+    'Preparing': 'bg-blue-100 text-blue-800',
+    'Ready': 'bg-indigo-100 text-indigo-800',
+    'Delivered': 'bg-green-100 text-green-800',
+    'Cancelled': 'bg-red-100 text-red-800'
+  };
+
+  function updateOrderStatus(orderId, status, cancelReason) {
+    var row = document.querySelector('tr[data-order-id="' + orderId + '"]');
+    if (!row) {
+      // Row not in current view, show notification
+      showNotification('Order #' + orderId + ' is now ' + status);
+      return;
+    }
+    var badge = row.querySelector('.status-badge');
+    if (badge) {
+      badge.textContent = status;
+      badge.className = 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full status-badge ' + (statusColors[status] || 'bg-gray-100 text-gray-800');
+    }
+    showNotification('Order #' + orderId + ' updated to ' + status);
+  }
+
+  function addNewOrderRow(data) {
+    var tbody = document.querySelector('table tbody');
+    var emptyRow = tbody.querySelector('td[colspan="7"]');
+    if (emptyRow) emptyRow.closest('tr').remove();
+
+    var date = new Date(data.createdAt).toLocaleString();
+    var color = statusColors[data.status] || 'bg-gray-100 text-gray-800';
+    var tr = document.createElement('tr');
+    tr.className = 'hover:bg-gray-50 cursor-pointer bg-yellow-50';
+    tr.setAttribute('data-order-id', data.orderId);
+    tr.setAttribute('onclick', "window.location.href='/admin/orders/" + data.orderId + "'");
+    tr.innerHTML =
+      '<td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm font-bold text-gray-900">#' + data.orderId + '</td>' +
+      '<td class="hidden sm:table-cell px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-500">' + date + '</td>' +
+      '<td class="hidden md:table-cell px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900">' + (data.customerName || 'Customer') + '</td>' +
+      '<td class="hidden lg:table-cell px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-500">' + (data.dineIn ? 'Dine-in' : 'Delivery') + '</td>' +
+      '<td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm font-medium text-gray-900">₹' + (data.totalAmount || 0).toFixed(2) + '</td>' +
+      '<td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full status-badge ' + color + '">' + data.status + '</span></td>' +
+      '<td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-right text-sm font-medium"><a href="/admin/orders/' + data.orderId + '" class="text-indigo-600 hover:text-indigo-900">&rarr;</a></td>';
+    tbody.insertBefore(tr, tbody.firstChild);
+
+    // Remove highlight after 3s
+    setTimeout(function() { tr.classList.remove('bg-yellow-50'); }, 3000);
+  }
+
+  function showNotification(msg) {
+    var n = document.createElement('div');
+    n.className = 'fixed top-4 right-4 z-[9999] bg-gray-900 text-white px-4 py-3 rounded-lg shadow-lg text-sm font-medium transition-all';
+    n.textContent = msg;
+    document.body.appendChild(n);
+    setTimeout(function() { n.style.opacity = '0'; setTimeout(function() { n.remove(); }, 300); }, 3000);
+  }
+
+  // Wait for RestoRealtime to be available
+  function init() {
+    if (!window.RestoRealtime) { setTimeout(init, 500); return; }
+    window.RestoRealtime.on('order:new', function(data) { addNewOrderRow(data); });
+    window.RestoRealtime.on('order:status', function(data) { updateOrderStatus(data.orderId, data.status); });
+    window.RestoRealtime.on('order:cancel', function(data) { updateOrderStatus(data.orderId, 'Cancelled', data.cancelReason); });
+  }
+  init();
+})();
+</script>
