@@ -2,11 +2,12 @@
   "name": "lazeez",
   "version": "1.0.0",
   "description": "Restaurant management system",
-  "main": "app.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app.js",
-    "dev": "nodemon app.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "build": "prisma generate"
   },
   "keywords": [],
   "author": "",
@@ -16,7 +17,6 @@
     "seed": "node prisma/seed.js"
   },
   "dependencies": {
-    "@paypal/checkout-server-sdk": "^1.0.3",
     "@prisma/client": "^5.22.0",
     "bcryptjs": "^3.0.3",
     "chart.js": "^4.5.1",
@@ -35,7 +35,6 @@
     "multer": "^2.1.1",
     "ngeohash": "^0.6.3",
     "node-cache": "^5.1.2",
-    "razorpay": "^2.9.6",
     "redis": "^5.11.0",
     "resend": "^6.10.0",
     "sharp": "^0.34.5",

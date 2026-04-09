@@ -107,7 +107,6 @@ async function showCheckout(req, res) {
     userData: userData || {},
     savedAddresses,
     distanceKm,
-    razorpayKeyId: process.env.RAZORPAY_KEY_ID,
     robots: 'noindex, nofollow'
   });
 }
@@ -159,9 +158,6 @@ async function createCheckoutSession(req, res) {
         paymentMethod: 'Online (Card)',
         paymentStatus: 'Paid',
         paymentTimestamp: new Date(),
-        // Just use a dummy random ID for demonstration 
-        razorpayOrderId: 'fake_order_' + Date.now(),
-        razorpayPaymentId: 'fake_payment_' + Date.now(),
         dineIn: false,
         items: {
           create: cart.map(item => ({

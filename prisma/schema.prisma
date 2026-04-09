@@ -63,11 +63,8 @@ model Order {
   deliveryFee  Float       @default(0)    // distance-based delivery fee
   platformFee  Float       @default(0)    // platform/service fee
   totalAmount  Float                      // grand total = itemTotal + deliveryFee + platformFee
-  paymentMethod String     @default("Online")       // Online (Razorpay)
-  paymentStatus String     @default("Pending")   // Pending|Paid|Failed
-  razorpayOrderId             String?
-  razorpayPaymentId           String?
-  razorpayRefundId            String?
+  paymentMethod String     @default("Online")
+  paymentStatus String     @default("Pending")
   paymentTimestamp        DateTime?
   address      String?
   customerName String?

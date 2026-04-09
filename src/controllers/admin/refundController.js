@@ -44,7 +44,7 @@ async function markCompleted(req, res) {
 
     const order = await db.order.findUnique({
       where: { id: orderId },
-      select: { razorpayPaymentId: true, totalAmount: true, refundStatus: true, user: { select: { email: true, name: true, id: true } } }
+      select: { totalAmount: true, refundStatus: true, user: { select: { email: true, name: true, id: true } } }
     });
 
     if (!order) {
@@ -61,20 +61,13 @@ async function markCompleted(req, res) {
       return res.redirect('/admin/refunds');
     }
 
-    if (!order.razorpayPaymentId) {
-      console.error('No Razorpay payment ID for order:', orderId);
-      if (req.headers['accept']?.includes('application/json')) {
-        return res.status(400).json({ success: false, error: 'No Razorpay payment found for this order' });
-      }
-      return res.redirect('/admin/refunds');
-    }
 
     // Fake Refund Simulation
     const refund = { id: 'fake_refund_' + Date.now() };
 
     await db.order.update({
       where: { id: orderId },
-      data: { refundStatus: 'Completed', razorpayRefundId: refund.id }
+      data: { refundStatus: 'Completed' }
     });
 
     if (order.user.email) {
@@ -88,7 +81,7 @@ async function markCompleted(req, res) {
     }
 
     if (req.headers['accept']?.includes('application/json') || req.headers['x-requested-with'] === 'XMLHttpRequest') {
-      return res.json({ success: true, orderId, refundStatus: 'Completed', razorpayRefundId: refund.id });
+      return res.json({ success: true, orderId, refundStatus: 'Completed' });
     }
     res.redirect('/admin/refunds');
   } catch (err) {
