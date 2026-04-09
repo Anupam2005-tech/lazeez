@@ -1,5 +1,6 @@
 <%- include('../partials/header') %>
 
+
 <div class="bg-[#e9ecee] min-h-[90vh] py-8 px-4">
   <div class="max-w-[1200px] mx-auto mb-6">
     <a href="/" class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-sm border border-[#e9e9eb] text-[#686b78] hover:text-[#fc8019] transition-all active:scale-95 group">
@@ -12,7 +13,7 @@
 
     <!-- Left Block: Address + Payment -->
     <div class="lg:col-span-8 flex flex-col gap-6">
-      <form action="/checkout" method="POST" id="checkoutForm" class="flex flex-col gap-6">
+      <form action="/checkout" method="POST" id="checkoutForm" class="flex flex-col gap-6" data-loader="false">
         
         <!-- Account / User verification box -->
         <div class="bg-white p-6 shadow-sm relative">
@@ -95,18 +96,25 @@
             <% if (savedAddresses.length > 0) { %>
               <div class="space-y-3 mb-4" id="address-list">
                 <% savedAddresses.forEach(function(addr) { %>
-                  <label class="flex items-start gap-3 p-3 border border-[#e9e9eb] rounded-lg cursor-pointer hover:border-[#fc8019] transition-colors <%= addr.isDefault ? 'border-[#fc8019] bg-orange-50' : '' %>" data-address-id="<%= addr.id %>">
-                    <input type="radio" name="selected-address" value="<%= addr.id %>" class="mt-1 accent-[#fc8019]" <%= addr.isDefault ? 'checked' : '' %> onchange="selectAddress(<%= addr.id %>)">
-                    <div class="flex-1 min-w-0">
+                  <div class="flex items-start gap-3 p-3 border border-[#e9e9eb] rounded-lg transition-colors <%= addr.isDefault ? 'border-[#fc8019] bg-orange-50' : '' %> hover:border-[#fc8019]" data-address-id="<%= addr.id %>">
+                    <input type="radio" name="selected-address" id="addr-radio-<%= addr.id %>" value="<%= addr.id %>" class="mt-1 accent-[#fc8019] cursor-pointer" <%= addr.isDefault ? 'checked' : '' %> onchange="selectAddress(<%= addr.id %>)">
+                    <label for="addr-radio-<%= addr.id %>" class="flex-1 min-w-0 cursor-pointer block">
                       <div class="flex items-center gap-2 mb-0.5">
-                        <span class="text-xs font-bold text-[#fc8019] uppercase bg-orange-100 px-2 py-0.5 rounded"><%= addr.label %></span>
+                        <span class="text-xs font-bold text-[#fc8019] uppercase bg-orange-100 px-2 py-0.5 rounded address-label-text"><%= addr.label %></span>
                         <% if (addr.isDefault) { %><span class="text-[10px] text-gray-400">Default</span><% } %>
                       </div>
-                      <p class="text-sm text-[#3d4152] font-medium"><%= [addr.flatNo, addr.address].filter(Boolean).join(', ') %></p>
-                      <% if (addr.landmark) { %><p class="text-xs text-[#7e808c]">Landmark: <%= addr.landmark %></p><% } %>
-                      <% if (addr.pincode) { %><p class="text-xs text-[#7e808c]">Pincode: <%= addr.pincode %></p><% } %>
-                    </div>
-                  </label>
+                      <p class="text-sm text-[#3d4152] font-medium address-detail-text"><%= [addr.flatNo, addr.address].filter(Boolean).join(', ') %></p>
+                      <% if (addr.landmark) { %><p class="text-xs text-[#7e808c] address-landmark-text">Landmark: <%= addr.landmark %></p><% } %>
+                      <% if (addr.pincode) { %><p class="text-xs text-[#7e808c] address-pincode-text">Pincode: <%= addr.pincode %></p><% } %>
+                      <input type="hidden" class="hidden-flatno" value="<%= addr.flatNo || '' %>">
+                      <input type="hidden" class="hidden-addr" value="<%= addr.address || '' %>">
+                      <input type="hidden" class="hidden-landmark" value="<%= addr.landmark || '' %>">
+                      <input type="hidden" class="hidden-pincode" value="<%= addr.pincode || '' %>">
+                    </label>
+                    <button type="button" onclick="editSavedAddress('<%= addr.id %>')" class="text-gray-400 hover:text-[#fc8019] p-1 ml-auto shrink-0 transition-colors">
+                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                    </button>
+                  </div>
                 <% }) %>
               </div>
             <% } %>
@@ -167,12 +175,13 @@
 
             <div class="border border-[#e9e9eb] p-6 rounded-xl">
               <div class="flex items-center gap-3 mb-4">
-                <svg class="w-8 h-8 text-[#3395ff]" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                <svg class="w-8 h-8 text-[#3395ff]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="5" width="20" height="14" rx="2"/>
+                  <path d="M2 10h20"/>
                 </svg>
                 <div>
-                  <h3 class="text-base font-bold text-[#282c3f]">Pay securely with Razorpay</h3>
-                  <p class="text-xs text-[#7e808c]">Your payment is protected by Razorpay's secure payment infrastructure</p>
+                  <h3 class="text-base font-bold text-[#282c3f]">Pay securely with Credit / Debit Card</h3>
+                  <p class="text-xs text-[#7e808c]">Your payment is processed securely via our mock transaction system.</p>
                 </div>
               </div>
 
@@ -183,37 +192,11 @@
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
                     Credit / Debit Card
                   </span>
-                  <span class="inline-flex items-center gap-1 text-xs font-semibold text-[#3d4152] bg-white border border-[#e9e9eb] px-3 py-1.5 rounded-lg">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 10h18M3 6h18M3 14h18M3 18h18"/></svg>
-                    Net Banking
-                  </span>
-                  <span class="inline-flex items-center gap-1 text-xs font-semibold text-[#3d4152] bg-white border border-[#e9e9eb] px-3 py-1.5 rounded-lg">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                    UPI / QR Code
-                  </span>
-                  <span class="inline-flex items-center gap-1 text-xs font-semibold text-[#3d4152] bg-white border border-[#e9e9eb] px-3 py-1.5 rounded-lg">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4h-4z"/></svg>
-                    Wallets
-                  </span>
-                </div>
-              </div>
-
-              <div class="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4">
-                <div class="flex items-center gap-2 mb-1">
-                  <svg class="w-5 h-5 text-[#fc8019]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                  </svg>
-                  <span class="text-sm font-bold text-[#282c3f]">UPI / QR Payment</span>
-                </div>
-                <p class="text-xs text-[#7e808c] mb-2">Scan QR code or use any UPI app (GPay, PhonePe, Paytm, etc.)</p>
-                <div class="flex items-center gap-2 bg-white border border-orange-200 rounded-md px-3 py-2">
-                  <span class="text-xs text-[#93959f]">Exact amount to pay:</span>
-                  <span class="text-sm font-bold text-[#282c3f]">₹<%= grandTotal.toFixed(2) %></span>
                 </div>
               </div>
 
               <p class="text-xs text-[#93959f] leading-relaxed">
-                You'll see a secure Razorpay payment modal to complete your payment. After successful payment, your order will be confirmed immediately.
+                You will be prompted to enter your card details to complete the payment. After successful simulation, your order will be confirmed immediately.
               </p>
             </div>
 
@@ -234,8 +217,8 @@
           <img src="/img/logo.svg" alt="Lazeez" class="w-full h-auto">
         </div>
         <div>
-          <h2 class="text-[#282c3f] font-bold text-[16px] leading-tight">Lazeez Signature</h2>
-          <p class="text-[#686b78] text-[13px]">Downtown Area</p>
+          <h2 class="text-[#282c3f] font-bold text-[16px] leading-tight">Lazeez</h2>
+          <p class="text-[#686b78] text-[13px]">Dhajanagar,Udaipur Gomati Tripura</p>
         </div>
       </div>
 
@@ -299,7 +282,45 @@
         <span class="font-bold text-[#535665]">Review your order and address details to avoid cancellations.</span> 
         Note: If you cancel within 60 seconds of placing your order, a 100% refund will be issued. No refund for cancellations made after 60 seconds.
       </div>
-      
+  </div>
+</div>
+
+<!-- Fake Card Payment Modal -->
+<div id="fake-card-modal" class="fixed inset-0 z-[9999] bg-black/60 hidden items-center justify-center backdrop-blur-sm p-4">
+  <div class="bg-white max-w-md w-full rounded-2xl shadow-2xl overflow-hidden transform transition-all">
+    <div class="bg-[#fc8019] p-6 text-white">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold">Secure Card Payment</h3>
+        <button type="button" onclick="closeFakeCardModal()" class="text-white hover:text-gray-200">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <p class="text-sm opacity-90">Total amount to pay</p>
+      <div class="text-3xl font-bold mt-1" id="mock-payment-amount"></div>
+    </div>
+    <div class="p-6">
+      <form id="fake-card-form" onsubmit="processFakePayment(event)">
+        <div class="mb-4">
+          <label class="block text-sm font-semibold text-gray-700 mb-1">Card Number (Mock)</label>
+          <div class="relative">
+            <input type="text" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#fc8019] focus:ring-1 focus:ring-[#fc8019]" placeholder="4444 4444 4444 4444" required>
+            <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+          </div>
+        </div>
+        <div class="flex gap-4 mb-6">
+          <div class="flex-1">
+            <label class="block text-sm font-semibold text-gray-700 mb-1">Expiry</label>
+            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#fc8019] focus:ring-1 focus:ring-[#fc8019]" placeholder="MM/YY" required>
+          </div>
+          <div class="flex-1">
+            <label class="block text-sm font-semibold text-gray-700 mb-1">CVV</label>
+            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#fc8019] focus:ring-1 focus:ring-[#fc8019]" placeholder="123" required>
+          </div>
+        </div>
+        <button type="submit" id="mock-process-btn" class="w-full bg-[#60b246] hover:bg-green-600 text-white font-bold py-3 rounded-lg flex justify-center items-center gap-2 transition-colors">
+          <span>Pay Now</span>
+        </button>
+      </form>
     </div>
   </div>
 </div>
@@ -308,10 +329,10 @@
 <script>
 (function() {
   var __checkoutData = JSON.parse(document.getElementById('checkout-data').textContent);
-  var ITEM_TOTAL = __checkoutData.itemTotal;
-  var DELIVERY_FEE = __checkoutData.deliveryFee;
-  var PLATFORM_FEE = __checkoutData.platformFee;
-  var GRAND_TOTAL = __checkoutData.grandTotal;
+  window.ITEM_TOTAL = __checkoutData.itemTotal;
+  window.DELIVERY_FEE = __checkoutData.deliveryFee;
+  window.PLATFORM_FEE = __checkoutData.platformFee;
+  window.GRAND_TOTAL = __checkoutData.grandTotal;
   var HAS_PHONE = __checkoutData.hasPhone;
   var HAS_EMAIL = __checkoutData.hasEmail;
 
@@ -459,98 +480,70 @@
       }
 
       var formData = new FormData(checkoutForm);
-      var body = {};
-      formData.forEach(function(value, key) { body[key] = value; });
+      window.checkoutBody = {};
+      formData.forEach(function(value, key) { window.checkoutBody[key] = value; });
 
+      // Show Fake Card Modal
+      var modal = document.getElementById('fake-card-modal');
+      var amountEl = document.getElementById('mock-payment-amount');
+      if (modal && amountEl) {
+        amountEl.textContent = '₹' + (calcTotal(getItems()) + DELIVERY_FEE + PLATFORM_FEE).toFixed(2);
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    });
+  }
+
+  window.closeFakeCardModal = function() {
+    var modal = document.getElementById('fake-card-modal');
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+    var payBtn = document.getElementById('checkout-pay-btn');
+    if (payBtn) {
+      payBtn.disabled = false;
+      payBtn.textContent = 'PAY ₹' + (calcTotal(getItems()) + DELIVERY_FEE + PLATFORM_FEE).toFixed(2) + ' SECURELY';
+    }
+  };
+
+  window.processFakePayment = function(e) {
+    if (e) e.preventDefault();
+    var processBtn = document.getElementById('mock-process-btn');
+    if (processBtn) {
+      processBtn.disabled = true;
+      processBtn.innerHTML = '<span>Processing...</span>';
+    }
+    
+    setTimeout(function() {
       fetch('/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify(body)
+        body: JSON.stringify(window.checkoutBody)
       })
       .then(function(r) { return r.json(); })
       .then(function(data) {
         if (!data.success) {
-          alert(data.error || 'Failed to initialize payment');
-          if (payBtn) {
-            payBtn.disabled = false;
-            payBtn.textContent = 'PAY ₹' + (calcTotal(getItems()) + DELIVERY_FEE + PLATFORM_FEE).toFixed(2) + ' SECURELY';
-          }
+          if (window.RestoLoader) window.RestoLoader.hide();
+          alert(data.error || 'Failed to process payment');
+          closeFakeCardModal();
           return;
         }
-
-        var options = {
-          key: data.key,
-          amount: data.amountInPaise,
-          currency: data.currency,
-          name: data.name,
-          description: data.description,
-          order_id: data.orderId,
-          prefill: {
-            name: data.prefill.name,
-            email: data.prefill.email,
-            contact: data.prefill.contact
-          },
-          config: {
-            display: {
-              blocks: {
-                utib: {
-                  name: 'Pay via UPI',
-                  instruments: [
-                    { method: 'upi', flows: ['collect', 'qr'] }
-                  ]
-                },
-                other: {
-                  name: 'Other Payment Methods',
-                  instruments: [
-                    { method: 'card' },
-                    { method: 'netbanking' },
-                    { method: 'wallet' }
-                  ]
-                }
-              },
-              sequence: ['block.utib', 'block.other'],
-              preferences: {
-                show_default_blocks: true
-              }
-            }
-          },
-          theme: {
-            color: '#fc8019'
-          },
-          handler: function(response) {
-            window.location.href = '/razorpay/success/' + response.razorpay_order_id;
-          },
-          modal: {
-            ondismiss: function() {
-              if (payBtn) {
-                payBtn.disabled = false;
-                payBtn.textContent = 'PAY ₹' + (calcTotal(getItems()) + DELIVERY_FEE + PLATFORM_FEE).toFixed(2) + ' SECURELY';
-              }
-              window.location.href = '/razorpay/cancel';
-            }
-          }
-        };
-
-        var rzp = new Razorpay(options);
-        rzp.on('payment.failed', function(response) {
-          alert('Payment failed: ' + (response.error.description || 'Please try again'));
-          if (payBtn) {
-            payBtn.disabled = false;
-            payBtn.textContent = 'PAY ₹' + (calcTotal(getItems()) + DELIVERY_FEE + PLATFORM_FEE).toFixed(2) + ' SECURELY';
-          }
-        });
-        rzp.open();
+        // Redirect to success
+        window.location.href = "/checkout/success/" + data.orderId;
       })
       .catch(function(err) {
+        if (window.RestoLoader) window.RestoLoader.hide();
         console.error('Checkout error:', err);
         alert('Something went wrong. Please try again.');
-        if (payBtn) {
-          payBtn.disabled = false;
-          payBtn.textContent = 'PAY ₹' + (calcTotal(getItems()) + DELIVERY_FEE + PLATFORM_FEE).toFixed(2) + ' SECURELY';
+        closeFakeCardModal();
+        if (processBtn) {
+          processBtn.disabled = false;
+          processBtn.innerHTML = '<span>Pay Now</span>';
         }
       });
-    });
-  }
+    }, 500); // Simulate network delay
+  };
 
   function getItems() {
     return window.RestoCartState ? window.RestoCartState.items || [] : [];
@@ -634,28 +627,79 @@
   });
 
   // Address selection and management
+  var editingAddressId = null;
+
   window.toggleNewAddress = function() {
     var form = document.getElementById('new-address-form');
-    if (form) form.classList.toggle('hidden');
+    if (form) {
+      form.classList.toggle('hidden');
+      if (form.classList.contains('hidden')) {
+        editingAddressId = null;
+        document.getElementById('new-addr-flatNo').value = '';
+        document.getElementById('new-addr-address').value = '';
+        document.getElementById('new-addr-landmark').value = '';
+        document.getElementById('new-addr-pincode').value = '';
+        var submitBtn = document.querySelector('button[onclick="saveNewAddress()"]');
+        if (submitBtn) submitBtn.textContent = 'Save & Use';
+      }
+    }
+  };
+
+  window.editSavedAddress = function(id) {
+    var form = document.getElementById('new-address-form');
+    var container = document.querySelector('[data-address-id="' + id + '"]');
+    if (!container || !form) return;
+    
+    editingAddressId = id;
+    var labelEl = container.querySelector('.address-label-text');
+    var flatnoEl = container.querySelector('.hidden-flatno');
+    var addrEl = container.querySelector('.hidden-addr');
+    var landmarkEl = container.querySelector('.hidden-landmark');
+    var pincodeEl = container.querySelector('.hidden-pincode');
+    
+    if (labelEl) document.getElementById('new-addr-label').value = labelEl.textContent.trim();
+    if (flatnoEl) document.getElementById('new-addr-flatNo').value = flatnoEl.value;
+    if (addrEl) document.getElementById('new-addr-address').value = addrEl.value;
+    if (landmarkEl) document.getElementById('new-addr-landmark').value = landmarkEl.value;
+    if (pincodeEl) document.getElementById('new-addr-pincode').value = pincodeEl.value;
+    
+    var submitBtn = document.querySelector('button[onclick="saveNewAddress()"]');
+    if (submitBtn) submitBtn.textContent = 'Update & Use';
+    
+    form.classList.remove('hidden');
+    form.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
 
   window.selectAddress = function(addrId) {
-    // Find the address data from the radio button's container
-    var radio = document.querySelector('input[value="' + addrId + '"]');
-    if (!radio) return;
-    var container = radio.closest('[data-address-id]');
-    // Update hidden field with the full address text
-    var textParts = container.querySelector('.text-sm, p').textContent;
-    var allPs = container.querySelectorAll('p');
-    var parts = [];
-    allPs.forEach(function(p) { parts.push(p.textContent); });
-    document.getElementById('checkout-address-hidden').value = parts.join(', ');
+    // Show loading state
+    var payBtn = document.getElementById('checkout-pay-btn');
+    if (payBtn) {
+      payBtn.disabled = true;
+      payBtn.textContent = 'UPDATING FEE...';
+    }
+
     // Set as default via API
     fetch('/addresses/' + addrId + '/set-default', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' }
-    }).catch(function() {});
-    // Update all radio labels styling
+    })
+    .then(function(r) { return r.json(); })
+    .then(function() {
+      // Reload the page to recalculate delivery fee based on the newly selected address
+      window.location.reload();
+    })
+    .catch(function() {
+      alert('Failed to update address. Please try again.');
+      if (payBtn) {
+        payBtn.disabled = false;
+        payBtn.textContent = 'PAY ₹' + GRAND_TOTAL.toFixed(2) + ' SECURELY';
+      }
+    });
+
+    // Update UI immediately (though page will reload soon)
+    var radio = document.querySelector('input[value="' + addrId + '"]');
+    if (!radio) return;
+    var container = radio.closest('[data-address-id]');
     document.querySelectorAll('[data-address-id]').forEach(function(el) {
       el.classList.remove('border-[#fc8019]', 'bg-orange-50');
       el.classList.add('border-[#e9e9eb]');
@@ -681,52 +725,85 @@
     if (landmark.length > 255) { alert('Landmark must be at most 255 characters'); return; }
     if (!pincode || !/^[0-9]{5,6}$/.test(pincode)) { alert('Pincode must be 5-6 digits'); return; }
 
-    fetch('/addresses', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ label: label, flatNo: flatNo, address: addr, landmark: landmark, pincode: pincode, isDefault: true })
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(saved) {
-      // Add radio button for new address
-      var addrList = document.getElementById('address-list');
-      if (!addrList) {
-        addrList = document.createElement('div');
-        addrList.id = 'address-list';
-        addrList.className = 'space-y-3 mb-4';
-        var addBtn = document.querySelector('[onclick="toggleNewAddress()"]');
-        addBtn.parentNode.insertBefore(addrList, addBtn);
+    var method = editingAddressId ? 'PUT' : 'POST';
+    var url = editingAddressId ? '/addresses/' + editingAddressId : '/addresses';
+
+    // Forward geocode the address to get accurate coordinates for the manual address
+    var query = [flatNo, addr, landmark, pincode].filter(Boolean).join(', ');
+    window.RestoLocation.forwardGeocode(query, function(coords) {
+      var bodyData = { label: label, flatNo: flatNo, address: addr, landmark: landmark, pincode: pincode, isDefault: true };
+      
+      // If we found coordinates, use them! This ensures the "pin" and distance are correct
+      if (coords) {
+        bodyData.lat = coords.lat;
+        bodyData.lng = coords.lng;
+        // Update global location state immediately
+        window.RestoLocation.update(coords.lat, coords.lng, query, pincode);
       }
-      // Uncheck all existing radios
-      addrList.querySelectorAll('input[type="radio"]').forEach(function(r) { r.checked = false; });
-      // Remove bg from existing labels
-      addrList.querySelectorAll('[data-address-id]').forEach(function(el) {
-        el.classList.remove('border-[#fc8019]', 'bg-orange-50');
-        el.classList.add('border-[#e9e9eb]');
-      });
-      // Create new address card
-      var card = document.createElement('label');
-      card.className = 'flex items-start gap-3 p-3 border border-[#fc8019] rounded-lg cursor-pointer hover:border-[#fc8019] transition-colors bg-orange-50';
-      card.setAttribute('data-address-id', saved.id);
-      var detail = [flatNo, addr].filter(Boolean).join(', ');
-      var extra = '';
-      if (landmark) extra += '<p class="text-xs text-[#7e808c]">Landmark: ' + landmark + '</p>';
-      if (pincode) extra += '<p class="text-xs text-[#7e808c]">Pincode: ' + pincode + '</p>';
-      card.innerHTML = '<input type="radio" name="selected-address" value="' + saved.id + '" class="mt-1 accent-[#fc8019]" checked onchange="selectAddress(' + saved.id + ')">' +
-        '<div class="flex-1 min-w-0">' +
-        '<div class="flex items-center gap-2 mb-0.5"><span class="text-xs font-bold text-[#fc8019] uppercase bg-orange-100 px-2 py-0.5 rounded">' + label + '</span><span class="text-[10px] text-gray-400">Default</span></div>' +
-        '<p class="text-sm text-[#3d4152] font-medium">' + detail + '</p>' + extra +
-        '</div>';
-      addrList.appendChild(card);
-      // Set hidden field
-      var fullAddr = [flatNo, addr, landmark, pincode ? 'Pincode: ' + pincode : ''].filter(Boolean).join(', ');
-      document.getElementById('checkout-address-hidden').value = fullAddr;
-      // Hide form
-      toggleNewAddress();
-      // Also update the profile
-      window.dispatchEvent(new CustomEvent('profile-saved', { detail: { flatNo: flatNo, address: addr, landmark: landmark, pincode: pincode } }));
-    })
-    .catch(function() { alert('Failed to save address'); });
+
+      fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bodyData)
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(saved) {
+        // Add radio button for new address
+        var addrList = document.getElementById('address-list');
+        if (!addrList) {
+          addrList = document.createElement('div');
+          addrList.id = 'address-list';
+          addrList.className = 'space-y-3 mb-4';
+          var addBtn = document.querySelector('[onclick="toggleNewAddress()"]');
+          addBtn.parentNode.insertBefore(addrList, addBtn);
+        }
+        // Uncheck all existing radios
+        addrList.querySelectorAll('input[type="radio"]').forEach(function(r) { r.checked = false; });
+        // Remove bg from existing labels
+        addrList.querySelectorAll('[data-address-id]').forEach(function(el) {
+          el.classList.remove('border-[#fc8019]', 'bg-orange-50');
+          el.classList.add('border-[#e9e9eb]');
+        });
+        // Remove old card if editing
+        if (editingAddressId) {
+          var oldCard = document.querySelector('[data-address-id="' + editingAddressId + '"]');
+          if (oldCard) oldCard.remove();
+        }
+
+        var card = document.createElement('div');
+        card.className = 'flex items-start gap-3 p-3 border border-[#fc8019] bg-orange-50 rounded-lg transition-colors hover:border-[#fc8019]';
+        card.setAttribute('data-address-id', saved.id);
+        var detail = [flatNo, addr].filter(Boolean).join(', ');
+        var extra = '';
+        if (landmark) extra += '<p class="text-xs text-[#7e808c] address-landmark-text">Landmark: ' + landmark + '</p>';
+        if (pincode) extra += '<p class="text-xs text-[#7e808c] address-pincode-text">Pincode: ' + pincode + '</p>';
+        
+        card.innerHTML = '<input type="radio" name="selected-address" id="addr-radio-' + saved.id + '" value="' + saved.id + '" class="mt-1 accent-[#fc8019] cursor-pointer" checked onchange="selectAddress(' + saved.id + ')">' +
+          '<label for="addr-radio-' + saved.id + '" class="flex-1 min-w-0 cursor-pointer block">' +
+          '<div class="flex items-center gap-2 mb-0.5"><span class="text-xs font-bold text-[#fc8019] uppercase bg-orange-100 px-2 py-0.5 rounded address-label-text">' + label + '</span><span class="text-[10px] text-gray-400">Default</span></div>' +
+          '<p class="text-sm text-[#3d4152] font-medium address-detail-text">' + detail + '</p>' + extra +
+          '<input type="hidden" class="hidden-flatno" value="' + (flatNo || '') + '">' +
+          '<input type="hidden" class="hidden-addr" value="' + (addr || '') + '">' +
+          '<input type="hidden" class="hidden-landmark" value="' + (landmark || '') + '">' +
+          '<input type="hidden" class="hidden-pincode" value="' + (pincode || '') + '">' +
+          '</label>' +
+          '<button type="button" onclick="editSavedAddress(\'' + saved.id + '\')" class="text-gray-400 hover:text-[#fc8019] p-1 ml-auto shrink-0 transition-colors">' +
+          '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>' +
+          '</button>';
+          
+        addrList.appendChild(card);
+        // Set hidden field
+        var fullAddr = [flatNo, addr, landmark, pincode ? 'Pincode: ' + pincode : ''].filter(Boolean).join(', ');
+        document.getElementById('checkout-address-hidden').value = fullAddr;
+        // Hide form
+        toggleNewAddress();
+        // Also update the profile
+        window.dispatchEvent(new CustomEvent('profile-saved', { detail: { flatNo: flatNo, address: addr, landmark: landmark, pincode: pincode } }));
+        // Reload to update distance and delivery fee
+        setTimeout(function() { window.location.reload(); }, 500);
+      })
+      .catch(function() { alert('Failed to save address'); });
+    });
   };
 
   // Set initial hidden address value from default address
@@ -768,5 +845,4 @@
   });
 })();
 </script>
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <%- include('../partials/footer') %>

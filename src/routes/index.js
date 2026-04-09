@@ -1,20 +1,18 @@
 const express = require('express');
 const router = express.Router();
-const homeController = require('../controllers/homeController');
-const offerController = require('../controllers/offerController');
 const db = require('../config/db');
 const appCache = require('../services/cache');
 
-router.get('/', homeController.index);
-router.get('/menu', homeController.menuPage);
-router.get('/item/:uid', homeController.itemDetail);
-router.get('/category/:id', homeController.categoryPage);
-router.get('/api/search', homeController.search);
-router.get('/api/menu-items', homeController.apiMenuItems);
-router.get('/offers', offerController.showOffers);
-router.get('/offers/api/count', offerController.apiCount);
-router.post('/offers/mark-viewed', offerController.markViewed);
-router.post('/offers/dismiss-popup', offerController.dismissPopup);
+router.get('/', (req, res, next) => require('../controllers/homeController').index(req, res, next));
+router.get('/menu', (req, res, next) => require('../controllers/homeController').menuPage(req, res, next));
+router.get('/item/:uid', (req, res, next) => require('../controllers/homeController').itemDetail(req, res, next));
+router.get('/category/:id', (req, res, next) => require('../controllers/homeController').categoryPage(req, res, next));
+router.get('/api/search', (req, res, next) => require('../controllers/homeController').search(req, res, next));
+router.get('/api/menu-items', (req, res, next) => require('../controllers/homeController').apiMenuItems(req, res, next));
+router.get('/offers', (req, res, next) => require('../controllers/offerController').showOffers(req, res, next));
+router.get('/offers/api/count', (req, res, next) => require('../controllers/offerController').apiCount(req, res, next));
+router.post('/offers/mark-viewed', (req, res, next) => require('../controllers/offerController').markViewed(req, res, next));
+router.post('/offers/dismiss-popup', (req, res, next) => require('../controllers/offerController').dismissPopup(req, res, next));
 
 router.get('/sitemap.xml', async (req, res) => {
   try {

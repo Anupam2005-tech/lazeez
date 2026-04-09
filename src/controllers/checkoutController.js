@@ -1,7 +1,6 @@
 const db = require('../config/db');
 const realtime = require('../services/realtime');
 const emailService = require('../services/email');
-const razorpayService = require('../services/razorpay');
 
 const RESTAURANT_LAT = parseFloat(process.env.RESTAURANT_LAT) || 23.5492425;
 const RESTAURANT_LNG = parseFloat(process.env.RESTAURANT_LNG) || 91.4668604;
@@ -23,11 +22,13 @@ function getDistance(lat1, lon1, lat2, lon2) {
 function calculateDistanceFee(lat, lng, settings) {
   const distance = getDistance(RESTAURANT_LAT, RESTAURANT_LNG, lat, lng);
   
-  // Base fee: e.g. 10 per 5km (rounded up)
-  let fee = Math.ceil(distance / 5) * settings.deliveryRatePer5km;
-  
-  // Rule: After 20km, add extra 20 for every 5km
-  if (distance > 20) {
+  let fee = 0;
+  if (distance <= 20) {
+    fee = Math.ceil(distance / 5) * settings.deliveryRatePer5km;
+  } else {
+    // First 20km at base rate (20/5 = 4 units)
+    fee = 4 * settings.deliveryRatePer5km;
+    // Remaining distance at higher rate (₹20 per 5km)
     const extraDistance = distance - 20;
     const extraUnits = Math.ceil(extraDistance / 5);
     fee += extraUnits * 20;
@@ -106,7 +107,7 @@ async function showCheckout(req, res) {
     userData: userData || {},
     savedAddresses,
     distanceKm,
-    razorpayKeyId: process.env.RAZORPAY_KEY_ID || '',
+    razorpayKeyId: process.env.RAZORPAY_KEY_ID,
     robots: 'noindex, nofollow'
   });
 }
@@ -140,54 +141,71 @@ async function createCheckoutSession(req, res) {
     }
 
     const totalAmount = itemTotal + deliveryFee + settings.platformFee;
+    
+    const encryption = require('../utils/encryption');
 
-    const order = await razorpayService.createOrder({
-      amount: totalAmount,
-      currency: 'INR',
-      receipt: `order_${Date.now()}`,
-      notes: {
+    // Create the order immediately as Paid (simulating successful fake card tx)
+    const order = await db.order.create({
+      data: {
         userId: userData.id,
-        cartJSON: JSON.stringify(cart.map(item => ({ id: item.id, quantity: item.quantity, price: item.price }))),
+        status: 'Pending',
+        itemTotal,
+        deliveryFee,
+        platformFee: settings.platformFee,
+        totalAmount,
         address: address || '',
         customerName: customerName || userData.name || '',
-        customerPhone: customerPhone || userData.phone || '',
-        deliveryFee: String(deliveryFee),
-        platformFee: String(settings.platformFee),
-        itemTotal: String(itemTotal)
+        customerPhone: encryption.encrypt(customerPhone || userData.phone || null),
+        paymentMethod: 'Online (Card)',
+        paymentStatus: 'Paid',
+        paymentTimestamp: new Date(),
+        // Just use a dummy random ID for demonstration 
+        razorpayOrderId: 'fake_order_' + Date.now(),
+        razorpayPaymentId: 'fake_payment_' + Date.now(),
+        dineIn: false,
+        items: {
+          create: cart.map(item => ({
+            menuItemId: item.id,
+            quantity: item.quantity,
+            unitPrice: item.price
+          }))
+        }
       }
     });
 
-    req.session.pendingRazorpayOrder = order.id;
-    req.session.pendingOrderData = {
-      userId: userData.id,
-      cartJSON: JSON.stringify(cart.map(item => ({ id: item.id, quantity: item.quantity, price: item.price }))),
-      address: address || '',
-      customerName: customerName || userData.name || '',
-      customerPhone: customerPhone || userData.phone || '',
-      deliveryFee: String(deliveryFee),
-      platformFee: String(settings.platformFee),
-      itemTotal: String(itemTotal),
-      totalAmount: String(totalAmount)
-    };
+    // Send realtime event
+    realtime.broadcastOrderEvent('order:new', {
+      orderId: order.id,
+      userId: order.userId,
+      totalAmount: order.totalAmount,
+      status: order.status,
+      customerName: order.customerName,
+      dineIn: order.dineIn,
+      createdAt: order.createdAt
+    });
+
+    // Clear cart
+    req.session.cart = [];
+    req.session.save();
+
+    // Send Email async
+    db.order.findUnique({
+      where: { id: order.id },
+      include: { items: { include: { menuItem: true } } }
+    }).then(fullOrder => {
+      if (fullOrder) {
+        emailService.sendOrderConfirmation(userData, fullOrder);
+      }
+    }).catch(err => console.error('[email] Order confirmation failed:', err));
 
     res.json({
       success: true,
       orderId: order.id,
-      amountInPaise: Math.round(totalAmount * 100),
-      amount: totalAmount,
-      key: process.env.RAZORPAY_KEY_ID,
-      currency: 'INR',
-      name: 'Lazeez Restaurant',
-      description: 'Order from Lazeez Restaurant',
-      prefill: {
-        name: userData.name || '',
-        email: userData.email || '',
-        contact: userData.phone || ''
-      }
+      message: 'Payment received successfully!'
     });
   } catch (err) {
-    console.error('Razorpay order creation error:', err);
-    res.status(500).json({ success: false, error: 'Payment initialization failed' });
+    console.error('Checkout processing error:', err);
+    res.status(500).json({ success: false, error: 'Checkout failed' });
   }
 }
 

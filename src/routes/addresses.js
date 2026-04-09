@@ -1,11 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const addressController = require('../controllers/addressController');
 
-router.get('/', addressController.list);
-router.post('/', addressController.create);
-router.put('/:id', addressController.update);
-router.delete('/:id', addressController.remove);
-router.put('/:id/set-default', addressController.setDefault);
+router.get('/', (req, res, next) => require('../controllers/addressController').list(req, res, next));
+router.post('/', (req, res, next) => require('../controllers/addressController').create(req, res, next));
+router.put('/:id', (req, res, next) => require('../controllers/addressController').update(req, res, next));
+router.delete('/:id', (req, res, next) => require('../controllers/addressController').remove(req, res, next));
+router.put('/:id/set-default', (req, res, next) => require('../controllers/addressController').setDefault(req, res, next));
 
 module.exports = router;

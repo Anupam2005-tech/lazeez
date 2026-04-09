@@ -1,6 +1,5 @@
 const db = require('../../config/db');
 const emailService = require('../../services/email');
-const razorpayService = require('../../services/razorpay');
 
 async function listRefunds(req, res) {
   try {
@@ -70,7 +69,8 @@ async function markCompleted(req, res) {
       return res.redirect('/admin/refunds');
     }
 
-    const refund = await razorpayService.processRefund(order.razorpayPaymentId, order.totalAmount);
+    // Fake Refund Simulation
+    const refund = { id: 'fake_refund_' + Date.now() };
 
     await db.order.update({
       where: { id: orderId },
@@ -92,9 +92,8 @@ async function markCompleted(req, res) {
     }
     res.redirect('/admin/refunds');
   } catch (err) {
-    console.error('Razorpay refund error:', err);
     if (req.headers['accept']?.includes('application/json')) {
-      return res.status(500).json({ success: false, error: err.message || 'Failed to process refund via Razorpay' });
+      return res.status(500).json({ success: false, error: err.message || 'Failed to process fake refund' });
     }
     res.redirect('/admin/refunds');
   }

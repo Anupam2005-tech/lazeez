@@ -20,7 +20,6 @@
   <script>
     window.RECAPTCHA_SITE_KEY = '<%= recaptchaSiteKey %>';
   </script>
-  <style>.grecaptcha-badge { display: none !important; }</style>
   <% if (typeof recaptchaSiteKey !== 'undefined' && recaptchaSiteKey) { %>
   <script src="https://www.google.com/recaptcha/api.js?render=<%= recaptchaSiteKey %>" async defer></script>
   <% } %>

@@ -459,24 +459,37 @@
       || validateField(pincode, 'Pincode', { required: true, pattern: /^[0-9]{5,6}$/ });
     if (err) { alert(err); return; }
 
-    var data = { label: label, flatNo: flatNo, address: address, landmark: landmark, pincode: pincode, isDefault: true };
-    var url = addrId ? '/addresses/' + addrId : '/addresses';
-    var method = addrId ? 'PUT' : 'POST';
-
     try {
-      var res = await fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-      var saved = await res.json();
-      if (saved.error) { alert(saved.error); return; }
-      document.getElementById('profile-addr-id').value = saved.id;
-      loadSavedAddresses();
-      window.dispatchEvent(new CustomEvent('profile-saved', { detail: { flatNo: flatNo, address: address, landmark: landmark, pincode: pincode } }));
-      var navParts = [];
-      if (flatNo) navParts.push(flatNo);
-      if (address) navParts.push(address);
-      var navLabel = navParts.join(', ');
-      if (pincode && navLabel.indexOf(pincode) === -1) navLabel = navLabel + ' - ' + pincode;
-      var navLoc = document.getElementById('navbar-location');
-      if (navLoc && navLabel) navLoc.textContent = navLabel;
+      // Forward geocode the address to get accurate coordinates for the manual address
+      var query = [flatNo, address, landmark, pincode].filter(Boolean).join(', ');
+      window.RestoLocation.forwardGeocode(query, async function(coords) {
+        var data = { label: label, flatNo: flatNo, address: address, landmark: landmark, pincode: pincode, isDefault: true };
+        
+        // If we found coordinates, use them! This ensures the "pin" is correct for this manual address
+        if (coords) {
+          data.lat = coords.lat;
+          data.lng = coords.lng;
+          // Update the global location state so distance calculations are updated immediately
+          window.RestoLocation.update(coords.lat, coords.lng, query, pincode);
+        }
+
+        var url = addrId ? '/addresses/' + addrId : '/addresses';
+        var method = addrId ? 'PUT' : 'POST';
+
+        var res = await fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+        var saved = await res.json();
+        if (saved.error) { alert(saved.error); return; }
+        document.getElementById('profile-addr-id').value = saved.id;
+        loadSavedAddresses();
+        
+        // Update Navbar Location Display
+        var navLabel = [flatNo, address].filter(Boolean).join(', ');
+        if (pincode && navLabel.indexOf(pincode) === -1) navLabel = navLabel + ' - ' + pincode;
+        var navLoc = document.getElementById('navbar-location');
+        if (navLoc && navLabel) navLoc.textContent = navLabel;
+
+        window.dispatchEvent(new CustomEvent('profile-saved', { detail: { flatNo: flatNo, address: address, landmark: landmark, pincode: pincode } }));
+      });
     } catch (e) {
       alert('Failed to save address');
     }

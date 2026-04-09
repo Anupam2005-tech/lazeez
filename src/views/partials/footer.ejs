@@ -30,49 +30,62 @@
   <% } %>
 
   <!-- Swiggy Style Dark Footer -->
-  <footer class="bg-black text-white py-12 mt-auto">
-    <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
+  <footer class="bg-black text-white py-12 border-t border-gray-800 w-full">
+  <div class="max-w-[1200px] mx-auto px-6 lg:px-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12 text-center md:text-left">
       
-      <!-- Logo column -->
-      <div class="col-span-1">
-        <a href="/" class="flex items-center mb-4 text-[#fc8019]">
+      <div class="flex flex-col items-center md:items-start">
+        <a href="/" class="mb-4 inline-block">
           <img src="/img/logo-white.svg" alt="Lazeez" class="h-10 w-auto">
         </a>
-        <p class="text-gray-400 text-sm">© 2026 Academic Project</p>
+        <p class="text-gray-400 text-sm leading-relaxed max-w-sm">
+          Serving authentic flavors and fresh ingredients every day. Join us for a memorable dining experience or order your favorites straight to your door.
+        </p>
+        <p class="text-gray-500 text-xs mt-6">©  Lazeez Restaurant</p>
       </div>
 
-      <!-- Links Column 1 -->
-      <div>
-        <h4 class="text-lg font-bold mb-4 text-white">Company</h4>
-        <ul class="space-y-3 text-gray-400 text-base">
-          <li><a href="#" class="hover:text-white transition-colors">About Us</a></li>
-          <li><a href="#" class="hover:text-white transition-colors">Careers</a></li>
-          <li><a href="#" class="hover:text-white transition-colors">Team</a></li>
+      <div class="flex flex-col items-center md:items-start">
+        <h4 class="text-lg font-bold mb-5 text-white">Visit Us</h4>
+        <ul class="space-y-4 text-gray-400 text-sm">
+          <li class="flex items-start justify-center md:justify-start gap-3">
+            <span class="text-[#fc8019] shrink-0">📍</span>
+            <span>Dhajanagar,near Netaji Subash Mahavidalaya,<br>Udaipur, Tripura 799114</span>
+          </li>
+          <li class="flex items-center justify-center md:justify-start gap-3">
+            <span class="text-[#fc8019] shrink-0">📞</span>
+            <a href="tel:+918974108608" class="hover:text-white transition-colors">+91 8974108608</a>
+          </li>
+          <li class="flex items-center justify-center md:justify-start gap-3">
+            <span class="text-[#fc8019] shrink-0">✉️</span>
+            <a href="mailto:bhowmikanupam33@gmail.com" class="hover:text-white transition-colors">hello@lazeez.com</a>
+          </li>
         </ul>
       </div>
 
-      <!-- Links Column 2 -->
-      <div>
-        <h4 class="text-lg font-bold mb-4 text-white">Contact</h4>
-        <ul class="space-y-3 text-gray-400 text-base">
-          <li><a href="#" class="hover:text-white transition-colors">Help & Support</a></li>
-          <li><a href="#" class="hover:text-white transition-colors">Partner with us</a></li>
-          <li><a href="#" class="hover:text-white transition-colors">Ride with us</a></li>
-        </ul>
-      </div>
-
-      <!-- Links Column 3 -->
-      <div>
-        <h4 class="text-lg font-bold mb-4 text-white">Legal</h4>
-        <ul class="space-y-3 text-gray-400 text-base">
-          <li><a href="#" class="hover:text-white transition-colors">Terms & Conditions</a></li>
-          <li><a href="#" class="hover:text-white transition-colors">Cookie Policy</a></li>
-          <li><a href="/admin/login" class="hover:text-white transition-colors">Admin Login</a></li>
-        </ul>
+      <div class="flex flex-col items-center md:items-start">
+        <h4 class="text-lg font-bold mb-5 text-white">Opening Hours</h4>
+        <div class="w-full max-w-[250px] md:max-w-none">
+          <ul class="space-y-2 text-gray-400 text-sm">
+            <li class="flex justify-between gap-4">
+              <span>Mon - Thu:</span>
+              <span class="text-white">11:00 AM - 10:00 PM</span>
+            </li>
+            <li class="flex justify-between gap-4">
+              <span>Fri - Sun:</span>
+              <span class="text-white">11:00 AM - 11:30 PM</span>
+            </li>
+          </ul>
+        </div>
+        
+        <div class="mt-8 flex gap-6">
+          <a href="/terms" class="hover:text-white transition-colors text-xs uppercase tracking-widest font-semibold text-gray-500">Terms</a>
+          <a href="/admin/login" class="hover:text-gray-300 transition-colors text-xs uppercase tracking-widest font-semibold text-gray-700">Staff Portal</a>
+        </div>
       </div>
 
     </div>
-  </footer>
+  </div>
+</footer>
 
   <!-- Storefront Cart (must be loaded on all storefront pages) -->
   <script src="/js/storefront-cart.js"></script>

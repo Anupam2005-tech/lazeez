@@ -44,25 +44,34 @@ const sessionConfig = {
 const valkeyUrl = process.env.VALKEY_URL || 'redis://127.0.0.1:6379';
 const valkeyClient = createClient({
   url: valkeyUrl,
+  disableOfflineQueue: true, // Crucial: Prevents extreme app slowness if Redis is down
   socket: {
-    connectTimeout: 5000,
+    connectTimeout: 2000,
     reconnectStrategy: (retries) => Math.min(retries * 500, 5000)
   }
 });
-valkeyClient.on('error', (err) => console.error('Valkey error:', err.message));
-valkeyClient.connect()
-  .then(() => {
-    sessionConfig.store = new RedisStore({
-      client: valkeyClient,
-      ttl: SESSION_MAX_AGE / 1000 // TTL in seconds (30 days)
-    });
-    console.log('Session store: Valkey connected (30-day TTL)');
-  })
-  .catch((err) => {
-    console.warn('Valkey unavailable, using in-memory session store:', err.message);
-  });
+let redisConnected = false;
+valkeyClient.on('connect', () => {
+  redisConnected = true;
+  console.log('Valkey/Redis connected successfully');
+});
+valkeyClient.on('error', (err) => {
+  redisConnected = false;
+});
+valkeyClient.connect().catch((err) => {
+  console.warn('Valkey/Redis connection unavailable. Using fallback memory session handling indirectly via node-redis failure');
+});
 
+const store = new RedisStore({
+  client: valkeyClient,
+  ttl: SESSION_MAX_AGE / 1000,
+  disableTouch: true // Improve performance
+});
+
+sessionConfig.store = store;
 app.use(session(sessionConfig));
+console.log('Session store initialized');
+
 
 // Global template variables
 app.use((req, res, next) => {
@@ -90,30 +99,56 @@ app.use((req, res, next) => {
   next();
 });
 
-// Store rating middleware (Weighted: 4.3 baseline + 1.3k ratings)
+// Caching for store ratings to prevent DB bottleneck
+let cachedStoreRating = { value: 4.3, count: 1300, lastUpdated: 0 };
+const RATING_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 app.use(async (req, res, next) => {
   try {
-    const BASE_RATING = 4.3;
-    const BASE_COUNT = 1300;
-    const allFeedback = await db.feedback.findMany({ select: { storeRating: true } });
-    const totalRealRating = allFeedback.reduce((sum, f) => sum + (f.storeRating || 0), 0);
-    const totalRealCount = allFeedback.length;
+    const now = Date.now();
+    if (now - cachedStoreRating.lastUpdated > RATING_CACHE_TTL) {
+      const BASE_RATING = 4.3;
+      const BASE_COUNT = 1300;
+      const allFeedback = await db.feedback.findMany({ select: { storeRating: true } });
+      const totalRealRating = allFeedback.reduce((sum, f) => sum + (f.storeRating || 0), 0);
+      const totalRealCount = allFeedback.length;
+      
+      const weightedRating = ((BASE_RATING * BASE_COUNT) + totalRealRating) / (BASE_COUNT + totalRealCount);
+      
+      cachedStoreRating = {
+        value: parseFloat(weightedRating.toFixed(1)),
+        count: BASE_COUNT + totalRealCount,
+        lastUpdated: now
+      };
+    }
     
-    // Formula: (BaseRating * BaseCount + SumRealRatings) / (BaseCount + RealCount)
-    const weightedRating = ((BASE_RATING * BASE_COUNT) + totalRealRating) / (BASE_COUNT + totalRealCount);
-    
-    res.locals.storeRating = parseFloat(weightedRating.toFixed(1));
-    res.locals.storeRatingCount = BASE_COUNT + totalRealCount;
+    res.locals.storeRating = cachedStoreRating.value;
+    res.locals.storeRatingCount = cachedStoreRating.count;
   } catch (e) {
-    res.locals.storeRating = 4.3;
-    res.locals.storeRatingCount = 1300;
+    res.locals.storeRating = cachedStoreRating.value || 4.3;
+    res.locals.storeRatingCount = cachedStoreRating.count || 1300;
   }
   next();
 });
 
-// Offer tracking middleware
+
+// Caching for offers to prevent DB bottleneck
+let cachedOffers = { data: [], lastUpdated: 0 };
+const OFFERS_CACHE_TTL = 60 * 1000; // 1 minute
+
 app.use(async (req, res, next) => {
   try {
+    const now = Date.now();
+    if (now - cachedOffers.lastUpdated > OFFERS_CACHE_TTL) {
+      const activeOffers = await db.offer.findMany({
+        where: { active: true },
+        orderBy: { createdAt: 'desc' }
+      });
+      cachedOffers = { data: activeOffers, lastUpdated: now };
+    }
+
+    const activeOffers = cachedOffers.data;
+
     // Read dismissed offer IDs from persistent cookie (survives session expiry)
     let popupDismissedOfferIds = [];
     try {
@@ -125,10 +160,7 @@ app.use(async (req, res, next) => {
     }
 
     if (!req.session.viewedOfferIds) req.session.viewedOfferIds = [];
-    const activeOffers = await db.offer.findMany({
-      where: { active: true },
-      orderBy: { createdAt: 'desc' }
-    });
+    
     const unseen = activeOffers.filter(o => !req.session.viewedOfferIds.includes(o.id));
     res.locals.unseenOfferCount = unseen.length;
 
@@ -150,6 +182,7 @@ app.use(async (req, res, next) => {
   next();
 });
 
+
 // Import Routes
 const indexRoutes = require('./src/routes/index');
 const authRoutes = require('./src/routes/auth');
@@ -159,7 +192,6 @@ const ordersRoutes = require('./src/routes/orders');
 const adminAuthRoutes = require('./src/routes/admin/auth');
 const adminRoutes = require('./src/routes/admin/index');
 const addressRoutes = require('./src/routes/addresses');
-const razorpayRoutes = require('./src/routes/razorpay');
 const realtime = require('./src/services/realtime');
 const { authLimiter, apiLimiter } = require('./src/middleware/rateLimiter');
 
@@ -201,7 +233,6 @@ app.use('/cart', cartRoutes);
 app.use('/checkout', checkoutRoutes);
 app.use('/orders', ordersRoutes);
 app.use('/addresses', addressRoutes);
-app.use('/razorpay', razorpayRoutes);
 app.use('/admin', adminAuthRoutes);
 app.use('/admin', adminRoutes);
 

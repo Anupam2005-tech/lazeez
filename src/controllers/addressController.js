@@ -6,6 +6,12 @@ async function list(req, res) {
     const userId = req.session.user?.id;
     if (!userId) return res.status(401).json({ error: 'Not logged in' });
 
+    const user = await db.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      req.session.destroy();
+      return res.status(401).json({ error: 'Session expired' });
+    }
+
     const addresses = await db.savedAddress.findMany({
       where: { userId },
       orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }]
@@ -13,8 +19,7 @@ async function list(req, res) {
 
     // If no saved addresses, create one from legacy user address fields
     if (addresses.length === 0) {
-      const user = await db.user.findUnique({ where: { id: userId } });
-      if (user && user.address) {
+      if (user.address) {
         const addr = await db.savedAddress.create({
           data: {
             userId,
@@ -44,6 +49,12 @@ async function create(req, res) {
   try {
     const userId = req.session.user?.id;
     if (!userId) return res.status(401).json({ error: 'Not logged in' });
+
+    const user = await db.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      req.session.destroy();
+      return res.status(401).json({ error: 'Session expired' });
+    }
 
     const { label, flatNo, address, landmark, pincode, lat, lng, isDefault } = req.body;
     if (!address) return res.status(400).json({ error: 'Address is required' });
@@ -90,6 +101,12 @@ async function update(req, res) {
   try {
     const userId = req.session.user?.id;
     if (!userId) return res.status(401).json({ error: 'Not logged in' });
+
+    const user = await db.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      req.session.destroy();
+      return res.status(401).json({ error: 'Session expired' });
+    }
 
     const id = req.params.id;
     const { label, flatNo, address, landmark, pincode, lat, lng, isDefault } = req.body;
@@ -148,6 +165,12 @@ async function remove(req, res) {
     const userId = req.session.user?.id;
     if (!userId) return res.status(401).json({ error: 'Not logged in' });
 
+    const user = await db.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      req.session.destroy();
+      return res.status(401).json({ error: 'Session expired' });
+    }
+
     const id = req.params.id;
     const existing = await db.savedAddress.findFirst({ where: { id, userId } });
     if (!existing) return res.status(404).json({ error: 'Address not found' });
@@ -180,6 +203,12 @@ async function setDefault(req, res) {
   try {
     const userId = req.session.user?.id;
     if (!userId) return res.status(401).json({ error: 'Not logged in' });
+
+    const user = await db.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      req.session.destroy();
+      return res.status(401).json({ error: 'Session expired' });
+    }
 
     const id = req.params.id;
     const existing = await db.savedAddress.findFirst({ where: { id, userId } });

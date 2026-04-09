@@ -99,6 +99,11 @@ async function updateProfile(req, res) {
       select: { email: true }
     });
 
+    if (!existingUser) {
+      req.session.destroy();
+      return res.status(401).json({ error: 'User log session expired or user deleted' });
+    }
+
     const data = {
       ...(name !== undefined && { name }),
       ...(phone !== undefined && { phone }),

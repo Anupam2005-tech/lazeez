@@ -74,8 +74,21 @@
       .then(function(s) {
         var rate = s.deliveryRatePer5km || 10;
         var platform = s.platformFee || 5;
-        var fiveKmBlocks = Math.ceil(distKm / 5);
-        var deliveryFee = fiveKmBlocks * rate;
+        
+        var deliveryFee = 0;
+        if (distKm <= 20) {
+          deliveryFee = Math.ceil(distKm / 5) * rate;
+        } else {
+          // First 20km at base rate (4 units of 5km)
+          deliveryFee = 4 * rate;
+          // Remaining distance at ₹20 per 5km
+          var extraDistance = distKm - 20;
+          var extraUnits = Math.ceil(extraDistance / 5);
+          deliveryFee += extraUnits * 20;
+        }
+        
+        if (distKm > 0 && deliveryFee < 10) deliveryFee = 10; // Minimum fee
+        
         var feeEl = document.getElementById('checkout-delivery-fee');
         var toPayEl = document.getElementById('checkout-to-pay');
         var payBtn = document.getElementById('checkout-pay-btn');
@@ -88,6 +101,9 @@
           var total = itemTotal + deliveryFee + platform;
           if (toPayEl) toPayEl.textContent = '\u20B9' + total.toFixed(2);
           if (payBtn) payBtn.textContent = 'PAY \u20B9' + total.toFixed(2) + ' SECURELY';
+          // Sync global JS variables for future quantity changes
+          if (typeof window.DELIVERY_FEE !== 'undefined') window.DELIVERY_FEE = deliveryFee;
+          if (typeof window.GRAND_TOTAL !== 'undefined') window.GRAND_TOTAL = total;
         }
       })
       .catch(function() {});
@@ -316,22 +332,6 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       }).catch(function() {});
-
-      // Also save as a saved address if user is logged in
-      if (address && address !== 'Your Location') {
-        fetch('/addresses', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            label: 'GPS Location',
-            address: address,
-            pincode: pincode || null,
-            lat: lat,
-            lng: lng,
-            isDefault: true
-          })
-        }).catch(function() {});
-      }
     },
 
     detectGPS: detectGPS,
@@ -391,44 +391,70 @@
     fetch('/auth/profile', { credentials: 'same-origin' })
       .then(function(r) { return r.json(); })
       .then(function(user) {
+        // 1. Check if user has a location in their profile
         if (user && user.lat && user.lng) {
-          var label = buildLabel(user);
-          var navLoc = document.getElementById('navbar-location');
-          if (navLoc) navLoc.textContent = label;
-          var distKm = calculateDistance(user.lat, user.lng);
-          var travelMin = Math.ceil((distKm / AVG_SPEED_KMH) * 60);
-          var totalMin = PREP_TIME_MIN + travelMin;
-          ['menu-distance', 'cart-distance'].forEach(function(id) {
-            var e = document.getElementById(id); if (e) e.textContent = formatDistance(distKm);
-          });
-          ['menu-time', 'item-time'].forEach(function(id) {
-            var e = document.getElementById(id); if (e) e.textContent = formatTime(travelMin);
-          });
-          ['cart-delivery-time', 'checkout-delivery-time'].forEach(function(id) {
-            var e = document.getElementById(id); if (e) e.textContent = formatTime(totalMin);
-          });
-          if (document.getElementById('checkout-delivery-fee')) {
-            updateCheckoutDeliveryFee(distKm);
-          }
-        } else {
-          detectGPS(function(result, error) {
+          update(user.lat, user.lng, buildLabel(user), user.pincode);
+          return;
+        }
+
+        // 2. Check if user has a stored location in their session state
+        if (typeof window.RestoCartState !== 'undefined' && window.RestoCartState.lat && window.RestoCartState.lng) {
+          console.log('Location already present in state, skipping auto-detect');
+          return;
+        }
+
+        // 3. Check if user has a stored location in localStorage
+        var savedLat = localStorage.getItem('resto_lat');
+        var savedLng = localStorage.getItem('resto_lng');
+        if (savedLat && savedLng) {
+          var addr = localStorage.getItem('resto_address');
+          var pin = localStorage.getItem('resto_pincode');
+          update(savedLat, savedLng, addr || 'Stored Location', pin);
+          return;
+        }
+
+        // 4. If user has an address but no coordinates, geocode it
+        if (user && user.address) {
+          forwardGeocode(user.address, function(result) {
             if (result) {
               window.RestoLocation.update(result.lat, result.lng, result.address, result.pincode);
             } else {
-              updateAllFallback();
+              checkAndDetectGPS();
             }
           });
+          return;
         }
+
+        // 5. Otherwise, detect GPS
+        checkAndDetectGPS();
       })
       .catch(function() {
-        detectGPS(function(result, error) {
-          if (result) {
-            window.RestoLocation.update(result.lat, result.lng, result.address, result.pincode);
-          } else {
-            updateAllFallback();
-          }
-        });
+        checkAndDetectGPS();
       });
+  }
+
+  function checkAndDetectGPS() {
+    if (navigator.permissions) {
+      navigator.permissions.query({ name: 'geolocation' }).then(function(res) {
+        if (res.state === 'denied') {
+          updateAllFallback();
+        } else {
+          doDetectGPS();
+        }
+      });
+    } else {
+      doDetectGPS();
+    }
+  }
+
+  function doDetectGPS() {
+    detectGPS(function(result, error) {
+      if (result) {
+        window.RestoLocation.update(result.lat, result.lng, result.address, result.pincode);
+      } else {
+        updateAllFallback();
+      }
+    });
   }
 
   if (document.readyState === 'loading') {

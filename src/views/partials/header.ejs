@@ -54,8 +54,8 @@
   <!-- Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
+  <script src="/js/firebase-app-compat.js"></script>
+  <script src="/js/firebase-auth-compat.js"></script>
   <script>
     window.FIREBASE_CONFIG = {
       apiKey: "<%= firebaseApiKey %>",
@@ -68,14 +68,13 @@
   </script>
   <script src="/js/firebase-client.js"></script>
   <!-- Leaflet CSS & JS (OpenStreetMap) -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <link rel="stylesheet" href="/css/leaflet.css" crossorigin="" />
+  <script src="/js/leaflet.js" crossorigin=""></script>
   <!-- Google reCAPTCHA v3 -->
   <script>
     window.RECAPTCHA_SITE_KEY = '<%= recaptchaSiteKey %>';
     window.RECAPTCHA_V2_SITE_KEY = '<%= recaptchaV2SiteKey %>';
   </script>
-  <style>.grecaptcha-badge { display: none !important; }</style>
   <% if (typeof recaptchaSiteKey !== 'undefined' && recaptchaSiteKey) { %>
   <script src="https://www.google.com/recaptcha/api.js?render=<%= recaptchaSiteKey %>" async defer></script>
   <% } %>
@@ -130,42 +129,35 @@
 </head>
 <body class="flex flex-col min-h-screen text-gray-800 antialiased selection:bg-orange-500 selection:text-white bg-white">
 
-  <!-- Global Page Loader (globalLoader equivalent) -->
-  <div id="global-page-loader" style="position:fixed;inset:0;z-index:99999;background:rgba(255,255,255,0.95);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" style="width:80px;height:80px;">
-      <circle class="pl__ring1" cx="64" cy="64" r="60" stroke-width="8" stroke="hsl(3,90%,55%)" stroke-dasharray="377 377" stroke-dashoffset="-376.4" stroke-linecap="round" fill="none" transform="rotate(-90,64,64)" style="transform-box:fill-box;transform-origin:50% 50%;animation:pl_ring1 4s 0s ease-in-out infinite;"></circle>
-      <circle class="pl__ring2" cx="64" cy="64" r="52.5" stroke-width="7" stroke="hsl(13,90%,55%)" stroke-dasharray="330 330" stroke-dashoffset="-329.3" stroke-linecap="round" fill="none" transform="rotate(-90,64,64)" style="transform-box:fill-box;transform-origin:50% 50%;animation:pl_ring2 4s 0.04s ease-in-out infinite;"></circle>
-      <circle class="pl__ring3" cx="64" cy="64" r="46" stroke-width="6" stroke="hsl(23,90%,55%)" stroke-dasharray="289 289" stroke-dashoffset="-288.6" stroke-linecap="round" fill="none" transform="rotate(-90,64,64)" style="transform-box:fill-box;transform-origin:50% 50%;animation:pl_ring3 4s 0.08s ease-in-out infinite;"></circle>
-      <circle class="pl__ring4" cx="64" cy="64" r="40.5" stroke-width="5" stroke="hsl(33,90%,55%)" stroke-dasharray="254.5 254.5" stroke-dashoffset="-254" stroke-linecap="round" fill="none" transform="rotate(-90,64,64)" style="transform-box:fill-box;transform-origin:50% 50%;animation:pl_ring4 4s 0.12s ease-in-out infinite;"></circle>
-      <circle class="pl__ring5" cx="64" cy="64" r="36" stroke-width="4" stroke="hsl(43,90%,55%)" stroke-dasharray="226.2 226.2" stroke-dashoffset="-225.8" stroke-linecap="round" fill="none" transform="rotate(-90,64,64)" style="transform-box:fill-box;transform-origin:50% 50%;animation:pl_ring5 4s 0.16s ease-in-out infinite;"></circle>
-      <circle class="pl__ring6" cx="64" cy="64" r="32.5" stroke-width="3" stroke="hsl(53,90%,55%)" stroke-dasharray="204.2 204.2" stroke-dashoffset="-203.9" stroke-linecap="round" fill="none" transform="rotate(-90,64,64)" style="transform-box:fill-box;transform-origin:50% 50%;animation:pl_ring6 4s 0.2s ease-in-out infinite;"></circle>
-    </svg>
-    <span style="font-size:14px;font-weight:600;color:#6b7280;">Loading...</span>
+  <!-- Global Page Loader -->
+  <div id="global-page-loader" style="position:fixed;inset:0;z-index:99999;background:rgba(255,255,255,0.96);display:flex;align-items:center;justify-content:center;">
+    <div style="width:36px;height:36px;border:3px solid #f3f3f3;border-top:3px solid #fc8019;border-radius:50%;animation:resto-spin 0.7s linear infinite;"></div>
   </div>
   <style>
-    @keyframes pl_ring1 { from { stroke-dashoffset: -376.2; transform: rotate(-0.25turn); } 23% { stroke-dashoffset: -94.2; transform: rotate(1turn); } 46%, 50% { stroke-dashoffset: -376.2; transform: rotate(2.25turn); } 73% { stroke-dashoffset: -94.2; transform: rotate(3.5turn); } 96%, to { stroke-dashoffset: -376.2; transform: rotate(4.75turn); } }
-    @keyframes pl_ring2 { from { stroke-dashoffset: -329.2; transform: rotate(-0.25turn); } 23% { stroke-dashoffset: -82.5; transform: rotate(1turn); } 46%, 50% { stroke-dashoffset: -329.2; transform: rotate(2.25turn); } 73% { stroke-dashoffset: -82.5; transform: rotate(3.5turn); } 96%, to { stroke-dashoffset: -329.2; transform: rotate(4.75turn); } }
-    @keyframes pl_ring3 { from { stroke-dashoffset: -288.4; transform: rotate(-0.25turn); } 23% { stroke-dashoffset: -72.3; transform: rotate(1turn); } 46%, 50% { stroke-dashoffset: -288.4; transform: rotate(2.25turn); } 73% { stroke-dashoffset: -72.3; transform: rotate(3.5turn); } 96%, to { stroke-dashoffset: -288.4; transform: rotate(4.75turn); } }
-    @keyframes pl_ring4 { from { stroke-dashoffset: -254.0; transform: rotate(-0.25turn); } 23% { stroke-dashoffset: -63.6; transform: rotate(1turn); } 46%, 50% { stroke-dashoffset: -254.0; transform: rotate(2.25turn); } 73% { stroke-dashoffset: -63.6; transform: rotate(3.5turn); } 96%, to { stroke-dashoffset: -254.0; transform: rotate(4.75turn); } }
-    @keyframes pl_ring5 { from { stroke-dashoffset: -225.7; transform: rotate(-0.25turn); } 23% { stroke-dashoffset: -56.5; transform: rotate(1turn); } 46%, 50% { stroke-dashoffset: -225.7; transform: rotate(2.25turn); } 73% { stroke-dashoffset: -56.5; transform: rotate(3.5turn); } 96%, to { stroke-dashoffset: -225.7; transform: rotate(4.75turn); } }
-    @keyframes pl_ring6 { from { stroke-dashoffset: -203.8; transform: rotate(-0.25turn); } 23% { stroke-dashoffset: -51.1; transform: rotate(1turn); } 46%, 50% { stroke-dashoffset: -203.8; transform: rotate(2.25turn); } 73% { stroke-dashoffset: -51.1; transform: rotate(3.5turn); } 96%, to { stroke-dashoffset: -203.8; transform: rotate(4.75turn); } }
+    @keyframes resto-spin { to { transform: rotate(360deg); } }
   </style>
   <script>
-    // Hide global loader when page is ready
+    // Global loader controls
+    window.RestoLoader = {
+      show: function() { var el = document.getElementById('global-page-loader'); if (el) el.style.display = 'flex'; },
+      hide: function() { var el = document.getElementById('global-page-loader'); if (el) el.style.display = 'none'; }
+    };
+
     (function() {
       var loader = document.getElementById('global-page-loader');
-      function hideLoader() { if (loader) loader.style.display = 'none'; }
-      function showLoader() { if (loader) loader.style.display = 'flex'; }
+      function hideLoader() { window.RestoLoader.hide(); }
+      function showLoader() { window.RestoLoader.show(); }
+      
       if (document.readyState === 'complete' || document.readyState === 'interactive') {
         setTimeout(hideLoader, 200);
       } else {
         document.addEventListener('DOMContentLoaded', function() { setTimeout(hideLoader, 200); });
       }
-      // Fix: hide loader when page is restored from bfcache (back/forward button)
+      
       window.addEventListener('pageshow', function(e) {
         if (e.persisted) hideLoader();
       });
-      // Show loader on navigation (non-AJAX link clicks and form submissions)
+
       document.addEventListener('click', function(e) {
         var a = e.target.closest('a');
         if (!a || !a.href) return;
@@ -173,9 +165,10 @@
         if (a.hasAttribute('onclick') || a.getAttribute('href') === '#') return;
         showLoader();
       });
+
       document.addEventListener('submit', function(e) {
         var form = e.target;
-        if (form.hasAttribute('onsubmit')) return;
+        if (form.hasAttribute('onsubmit') || form.getAttribute('data-loader') === 'false') return;
         showLoader();
       });
     })();
@@ -205,18 +198,9 @@
 
   <!-- Global Confirm Modal -->
   <%- include('confirmModal') %>
-
+  
   <!-- Main Content Wrapper -->
   <main class="flex-grow pt-24 pb-12 relative z-10 w-full">
-
-  <!-- Mobile Back Button (visible on mobile only) -->
-  <div class="sm:hidden max-w-[1200px] mx-auto px-3 -mt-2 mb-3">
-    <button onclick="if(history.length>1){history.back()}else{window.location.href='/'}" class="flex items-center gap-1 text-[#3d4152] bg-transparent border-none cursor-pointer p-1 -ml-1">
-      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
-      </svg>
-    </button>
-  </div>
 
   <% if (typeof popupOffer !== 'undefined' && popupOffer) { %>
   <!-- One-time offer popup -->

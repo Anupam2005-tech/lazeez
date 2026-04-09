@@ -1,6 +1,18 @@
 <div class="mb-4 sm:mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
   <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Menu Items</h2>
   <div class="flex flex-wrap gap-2">
+    <div class="relative">
+      <input type="text" id="menuSearch" placeholder="Search dishes..." class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-3 pr-10 py-2">
+      <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+        <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      </div>
+    </div>
+    <select id="categoryFilter" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block py-2 px-3">
+      <option value="">All Categories</option>
+      <% categories.forEach(cat => { %>
+        <option value="<%= cat.name %>"><%= cat.name %></option>
+      <% }) %>
+    </select>
     <a href="/admin/categories" class="bg-gray-100 text-gray-700 px-3 sm:px-4 py-2 rounded shadow hover:bg-gray-200 text-xs sm:text-sm font-medium">Categories</a>
     <a href="/admin/menu/add" class="bg-indigo-600 text-white px-3 sm:px-4 py-2 rounded shadow hover:bg-indigo-700 text-xs sm:text-sm font-medium">Add Dish</a>
   </div>
@@ -57,6 +69,36 @@
           </td>
         </tr>
       <% }) %>
-    </tbody>
+</tbody>
   </table>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('menuSearch');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const rows = document.querySelectorAll('tbody tr');
+
+    function filterTable() {
+      const searchTerm = searchInput.value.toLowerCase();
+      const selectedCat = categoryFilter.value;
+
+      rows.forEach(row => {
+        const itemName = row.querySelector('.text-gray-900').textContent.toLowerCase();
+        const itemCat = row.querySelector('td:nth-child(3)').textContent.trim();
+        
+        const matchesSearch = itemName.includes(searchTerm);
+        const matchesCat = selectedCat === "" || itemCat === selectedCat;
+
+        if (matchesSearch && matchesCat) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+
+    searchInput.addEventListener('input', filterTable);
+    categoryFilter.addEventListener('change', filterTable);
+  });
+</script>

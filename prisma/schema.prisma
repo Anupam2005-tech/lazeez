@@ -25,7 +25,6 @@ model User {
   address     String?                       // full address text
   lat         Float?                        // latitude
   lng         Float?                        // longitude
-  razorpayCustomerId String?                // Razorpay customer ID for saved payments
   createdAt   DateTime @default(now())
   orders      Order[]
   feedbacks   Feedback[]
@@ -66,10 +65,9 @@ model Order {
   totalAmount  Float                      // grand total = itemTotal + deliveryFee + platformFee
   paymentMethod String     @default("Online")       // Online (Razorpay)
   paymentStatus String     @default("Pending")   // Pending|Paid|Failed
-  razorpayOrderId         String?
-  razorpayPaymentId       String?
-  razorpaySignature       String?
-  razorpayRefundId        String?
+  razorpayOrderId             String?
+  razorpayPaymentId           String?
+  razorpayRefundId            String?
   paymentTimestamp        DateTime?
   address      String?
   customerName String?

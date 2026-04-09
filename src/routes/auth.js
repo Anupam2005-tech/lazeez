@@ -1,18 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const authController = require('../controllers/authController');
 
 const validate = require('../middleware/validate');
 const { tokenSchema, profileSchema } = require('../schemas/authSchema');
 
-router.get('/login', authController.showLogin);
-router.get('/register', authController.showRegister);
-router.post('/verify-token', validate(tokenSchema), authController.verifyToken);
-router.post('/local-login', authController.localLogin);
-router.post('/local-register', authController.localRegister);
-router.post('/logout', authController.logout);
-router.get('/profile', authController.getProfile);
-router.post('/profile', validate(profileSchema), authController.updateProfile);
-router.post('/onboarding-done', authController.onboardingDone);
+router.get('/login', (req, res, next) => require('../controllers/authController').showLogin(req, res, next));
+router.get('/register', (req, res, next) => require('../controllers/authController').showRegister(req, res, next));
+router.post('/verify-token', validate(tokenSchema), (req, res, next) => require('../controllers/authController').verifyToken(req, res, next));
+router.post('/local-login', (req, res, next) => require('../controllers/authController').localLogin(req, res, next));
+router.post('/local-register', (req, res, next) => require('../controllers/authController').localRegister(req, res, next));
+router.post('/logout', (req, res, next) => require('../controllers/authController').logout(req, res, next));
+router.get('/profile', (req, res, next) => require('../controllers/authController').getProfile(req, res, next));
+router.post('/profile', validate(profileSchema), (req, res, next) => require('../controllers/authController').updateProfile(req, res, next));
+router.post('/onboarding-done', (req, res, next) => require('../controllers/authController').onboardingDone(req, res, next));
 
 module.exports = router;

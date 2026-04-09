@@ -1,128 +1,126 @@
-# 🥗 Lazeez - Modern Restaurant Management System
+# 🍴 Lazeez - Premium Restaurant Management System
 
-[![Node.js](https://img.shields.io/badge/Node.js-18%2B-green.svg)](https://nodejs.org/)
-[![Express](https://img.shields.io/badge/Express-5.x-blue.svg)](https://expressjs.com/)
-[![Prisma](https://img.shields.io/badge/Prisma-5.x-teal.svg)](https://www.prisma.io/)
-[![SQLite](https://img.shields.io/badge/SQLite-3.x-lightgrey.svg)](https://www.sqlite.org/)
-[![License](https://img.shields.io/badge/License-ISC-orange.svg)](LICENSE)
+![Project Badge](https://img.shields.io/badge/Status-Active-brightgreen?style=for-the-badge) ![Version](https://img.shields.io/badge/Version-1.0.0-blue?style=for-the-badge) ![Node.js](https://img.shields.io/badge/Node.js-Express_5-success?style=for-the-badge&logo=nodedotjs) ![Prisma](https://img.shields.io/badge/Prisma-ORM-white?style=for-the-badge&logo=prisma)
 
-**Lazeez** (meaning *delicious* in Arabic/Urdu) is a high-performance, full-stack restaurant management solution. It features a stunning customer storefront for seamless ordering and a robust admin dashboard for real-time inventory and order management.
+**Lazeez** is a full-stack, state-of-the-art restaurant management ecosystem designed to deliver a highly premium, aesthetic, and blazing-fast user experience. It features a dynamic, SEO-optimized storefront for customers and an advanced real-time Admin Operations Dashboard.
 
 ---
 
-## 🚀 Key Features
+## 🛠️ Technology Stack
 
-### 🛒 Customer Storefront
-- **Dynamic Menu**: Categorized menu with Veg/Non-Veg filters and "Bestseller" highlights.
-- **Smart Cart & Checkout**: Intuitive cart management with delivery instructions and dine-in options.
-- **User Profiles**: Secure authentication, order history, and multiple saved addresses.
-- **Onboarding Wizard**: Guided first-time experience to ensure profile completeness.
-- **Real-time Tracking**: Live order status updates (Pending → Preparing → Ready → Delivered).
-- **Feedback System**: Rate your meal and the store with a weighted rating algorithm.
+The project is built using a modern, scalable stack focusing on performance and developer productivity.
 
-### 📊 Admin Dashboard
-- **Inventory Control**: Add, edit, or toggle availability for menu items and categories.
-- **Live Order Management**: Real-time order notifications via Server-Sent Events (SSE).
-- **Offer Management**: Create and track promotional banners with smart popup logic.
-- **Analytics**: Beautiful dashboard reports powered by Chart.js.
-- **System Settings**: Configure restaurant coordinates, fees, and more.
-
-### 🛡️ Security & Performance
-- **Firebase Auth**: Enterprise-grade authentication with Google OAuth support.
-- **Image Optimization**: Automatic **AVIF** compression using Sharp for lightning-fast loads.
-- **Rate Limiting**: Protection against brute-force attacks on auth and API endpoints.
-- **Persistent Sessions**: Redis-backed session management (Valkey) for high availability.
-- **Security Headers**: Hardened with Helmet.js to prevent common web vulnerabilities.
+| Category | Technology | Purpose |
+| --- | --- | --- |
+| **Backend Framework** | Express.js 5.2 | High-performance routing, asynchronous middleware, and API design. |
+| **Database & ORM** | Supabase (PostgreSQL) + Prisma | Scalable relational storage with a strongly typed ORM for safe schema migrations. |
+| **Caching & Sessions** | Redis / Valkey | Distributed session management and application-level caching to reduce DB load. |
+| **View Engine** | EJS + Express Layouts | Server-side rendering (SSR) for instantaneous First Contentful Paint (FCP) and SEO. |
+| **Styling** | Tailwind CSS | Utility-first CSS for a pixel-perfect, responsive, and premium UI. |
+| **Authentication** | Firebase Admin SDK | Secure identity management, JWT token validation, and passwordless auth. |
+| **Image Pipeline** | Sharp + Multer | Automated image processing pipeline converting uploads to `AVIF` for maximum compression. |
+| **Real-time Comm** | Server-Sent Events (SSE) | Unidirectional real-time streaming from server to admin dashboard. |
+| **Email Service** | Resend API | Transactional email delivery for orders and system notifications. |
 
 ---
 
-## 🛠️ Tech Stack
+## 🧠 DSA, Algorithms & Core Concepts
 
-- **Backend**: Node.js, Express 5 (latest)
-- **Frontend**: EJS (Server-Side Rendering), Tailwind CSS, Vanilla JS
-- **Database**: Prisma ORM with SQLite (Dev) / PostgreSQL (Prod)
-- **Auth**: Firebase Admin SDK
-- **Real-time**: Server-Sent Events (SSE)
-- **Media**: Multer + Sharp (AVIF) + Cloudinary (Optional)
-- **Mailing**: Resend SDK
-- **Caching**: Redis (Valkey) for sessions and rate limiting
+The system implements several computer science fundamentals to ensure efficiency and security.
 
----
+### 1. Advanced Search with Trie Data Structure
+To enable lightning-fast menu searches, the application implements a **Trie (Prefix Tree)**. 
+- **Concept**: Instead of performing expensive `LIKE %query%` SQL queries, the system indexes menu items in a Trie.
+- **Complexity**: Reduces search time complexity to $O(L)$, where $L$ is the length of the search query, regardless of the total number of menu items.
+- **Implementation**: Found in `src/utils/trie.js` and integrated into the caching service.
 
-## 📂 Project Structure
+### 2. Cryptography & Data Security
+Sensitive customer information (like phone numbers) is not stored in plain text.
+- **Algorithm**: **AES-256-CBC** (Advanced Encryption Standard).
+- **Concept**: Symmetric encryption using a secure 32-byte key and a unique Initialization Vector (IV) for every encryption operation to prevent pattern analysis.
+- **Implementation**: Handled by `src/utils/encryption.js`.
 
-```text
-lazeez/
-├── prisma/                 # Database schema and seed scripts
-├── public/                 # Static assets (CSS, client JS, images)
-├── scripts/                # Utility scripts (Admin creation, etc.)
-└── src/
-    ├── config/             # DB and Firebase configurations
-    ├── controllers/        # Logical handlers (Admin & Storefront)
-    ├── middleware/         # Auth, Session, Rate-limiting
-    ├── routes/             # Express route definitions
-    ├── services/           # Business logic (Real-time, etc.)
-    └── views/              # EJS templates and layouts
-```
+### 3. Geolocation & Distance Logic
+The system calculates delivery fees based on the physical distance between the restaurant and the customer.
+- **Logic**: Integration with **OpenStreetMap (Nominatim)** and **Leaflet.js** for coordinate mapping.
+- **Pricing Algorithm**: Implements a tiered pricing model where the delivery fee scales based on distance intervals.
+
+### 4. Memory Caching Strategies
+To avoid database bottlenecks on high-traffic pages (like the Home page), the system uses:
+- **TTL (Time-To-Live) Caching**: Store ratings and active offers in memory, refreshing every few minutes.
+- **Distributed Sessions**: Moving session state from local memory to Redis/Valkey to support horizontal scaling.
 
 ---
 
-## ⚙️ Getting Started
+## 🏗️ System Design Concepts
 
-### Prerequisites
-- Node.js (v18 or higher)
-- Redis server (optional, falls back to memory store)
+The architecture is designed for scalability, maintainability, and low latency.
 
-### 1. Project Setup
+### 1. Layered Architecture (SoC)
+The project follows a strict **Separation of Concerns (SoC)**:
+- **Presentation Layer**: EJS templates and client-side JS for the UI.
+- **Routing Layer**: Express routers that define endpoints and apply middleware.
+- **Controller Layer**: Business logic handlers that process requests and orchestrate services.
+- **Persistence Layer**: Prisma ORM providing a clean interface to the PostgreSQL database.
+
+### 2. Real-time Updates via SSE
+Instead of traditional WebSockets (which are bidirectional and heavier) or Polling (which is inefficient), the Admin Dashboard uses **Server-Sent Events (SSE)**.
+- **Why SSE?**: Perfect for "Dashboard" use cases where the server needs to push updates (new orders, status changes) to the client without the client needing to send data back.
+- **Efficiency**: Maintains a single long-lived HTTP connection, reducing overhead.
+
+### 3. Performance Optimizations
+- **Lazy Loading**: Controllers are required only when the route is hit, reducing the initial memory footprint of the application.
+- **AVIF Image Compression**: The system automatically converts all uploaded images to AVIF format using the `Sharp` library, significantly reducing page load times without losing quality.
+- **Database Connection Pooling**: Utilizes Supabase's connection pooler (PgBouncer) to handle thousands of concurrent database connections efficiently.
+
+### 4. Security Hardening
+- **Rate Limiting**: Implementation of `express-rate-limit` to prevent Brute Force and DoS attacks on auth endpoints.
+- **Middleware Guards**: Custom `adminAuth` and `auth` middleware to ensure strict RBAC (Role-Based Access Control).
+- **Input Validation**: Use of **Zod** for strict schema validation of incoming API requests.
+
+---
+
+## 🚀 Setup & Installation
+
+### 1. Prerequisites
+- Node.js (v18.0.0+)
+- Redis / Valkey server
+- PostgreSQL database (Supabase recommended)
+
+### 2. Installation
 ```bash
-git clone <your-new-repo-url> lazeez
-cd lazeez
 npm install
 ```
 
-### 2. Environment Setup
-Create a `.env` file from the example:
-```bash
-cp .env.example .env
-```
-Update the following keys:
-- `SESSION_SECRET`: A secure random string.
-- `DATABASE_URL`: Your Prisma connection string.
-- `FIREBASE_*`: Your Firebase project credentials.
-- `RESEND_API_KEY`: For email notifications.
+### 3. Configuration
+Copy `.env.example` to `.env` and fill in your credentials for:
+- `DATABASE_URL` & `DIRECT_URL`
+- `SESSION_SECRET` & `ENCRYPTION_KEY`
+- Firebase Admin SDK JSON
+- Resend API Key
 
-### 3. Database Initialization
+### 4. Database Initialization
 ```bash
-npx prisma generate
-npx prisma db push
-npx prisma db seed
+npx prisma migrate dev
+node prisma/seed.js
+node scripts/create-admin.js
 ```
 
-### 4. Run the App
-**Development Mode (Auto-reload):**
+### 5. Execution
 ```bash
-npm run dev
-```
-**Production Mode:**
-```bash
-npm start
+npm run dev # Development
+npm start   # Production
 ```
 
 ---
 
-## 📜 Available Scripts
+## 💻 Operational Commands
 
-| Command | Description |
-| :--- | :--- |
-| `npm run dev` | Starts server with `nodemon` for development. |
-| `npm start` | Starts server in production mode. |
-| `npx prisma studio` | Opens a GUI to view/edit database records. |
-| `node scripts/create-admin.js` | Utility to promote a user to Admin. |
+| Command | Action |
+| --- | --- |
+| `npm run dev` | Starts server with nodemon |
+| `npx prisma generate` | Updates Prisma Client typings |
+| `npx prisma studio` | Opens database GUI |
+| `node scripts/update-menu.js` | Bulk updates menu items |
 
----
-
-## 📄 License
-This project is licensed under the **ISC License**.
-
----
-*Developed with ❤️ for the School of Developers.*
+> _Designed with a focus on architectural elegance and extreme performance._
