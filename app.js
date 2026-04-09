@@ -11,6 +11,7 @@ const db = require('./src/config/db');
 dotenv.config();
 
 const app = express();
+app.set('trust proxy', 1); 
 
 // View engine setup
 app.set('views', path.join(__dirname, 'src', 'views'));
