@@ -30,44 +30,51 @@ function imageUpload(options) {
   const compressAndUpload = async (req, res, next) => {
     if (!req.file || !req.file.buffer) return next();
 
-    try {
-      // Process buffer with sharp
-      const buffer = await sharp(req.file.buffer)
-        .resize(3840, 2160, { fit: 'inside', withoutEnlargement: true })
-        .avif({
-          quality: 80,
-          effort: 4,
-          chromaSubsampling: '4:4:4'
-        })
-        .toBuffer();
+      try {
+        console.log('Processing image upload for file:', req.file.originalname);
+        // Process buffer with sharp
+        const buffer = await sharp(req.file.buffer)
+          .resize(3840, 2160, { fit: 'inside', withoutEnlargement: true })
+          .avif({
+            quality: 80,
+            effort: 4,
+            chromaSubsampling: '4:4:4'
+          })
+          .toBuffer();
+        console.log('Image successfully compressed with sharp');
 
-      // Cloudinary folder path
-      const folderPath = uploadDir ? `resto/${uploadDir}` : 'resto';
+        // Cloudinary folder path
+        const folderPath = uploadDir ? `resto/${uploadDir}` : 'resto';
+        console.log('Uploading to Cloudinary folder:', folderPath);
 
-      // Upload stream to cloudinary
-      const result = await new Promise((resolve, reject) => {
-        const uploadStream = cloudinary.uploader.upload_stream(
-          {
-            folder: folderPath,
-            resource_type: 'image',
-            format: 'avif' // Explicitly tell Cloudinary to store it as AVIF
-          },
-          (error, result) => {
-            if (error) return reject(error);
-            resolve(result);
-          }
-        );
-        uploadStream.end(buffer);
-      });
+        // Upload stream to cloudinary
+        const result = await new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            {
+              folder: folderPath,
+              resource_type: 'image',
+              format: 'avif' // Explicitly tell Cloudinary to store it as AVIF
+            },
+            (error, result) => {
+              if (error) {
+                console.error('Cloudinary upload_stream error:', error);
+                return reject(error);
+              }
+              resolve(result);
+            }
+          );
+          uploadStream.end(buffer);
+        });
+        console.log('Cloudinary upload successful. URL:', result.secure_url);
 
-      // Pass the complete URL directly to standard filename parameter
-      req.file.filename = result.secure_url;
-      
-      next();
-    } catch (err) {
-      console.error('Cloudinary Image upload failed:', err);
-      next(new Error('Failed to process and upload image. Please try a different file.'));
-    }
+        // Pass the complete URL directly to standard filename parameter
+        req.file.filename = result.secure_url;
+        
+        next();
+      } catch (err) {
+        console.error('Detailed Cloudinary Image upload failure:', err);
+        next(new Error('Failed to process and upload image. Please try a different file.'));
+      }
   };
 
   return [multerMemory.single('image'), compressAndUpload];

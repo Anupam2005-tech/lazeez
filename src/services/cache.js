@@ -72,10 +72,10 @@ class AppCache {
     return results;
   }
 
-  refresh() {
+  async refresh() {
     this.isLoaded = false;
     htmlCache.flushAll(); 
-    this.load().catch(console.error);
+    await this.load().catch(console.error);
   }
 
   getHtml(key) { return htmlCache.get(key); }

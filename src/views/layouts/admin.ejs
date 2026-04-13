@@ -41,7 +41,7 @@
   </script>
   <script src="/js/firebase-client.js"></script>
 </head>
-<body class="bg-gray-100 text-gray-800 font-sans antialiased flex h-screen overflow-hidden" x-data="{ sidebarOpen: false }">
+<body class="bg-gray-100 text-gray-800 font-sans antialiased flex min-h-screen" x-data="{ sidebarOpen: false }">
   
   <!-- Mobile sidebar backdrop -->
   <div x-show="sidebarOpen" 
@@ -58,7 +58,7 @@
 
   <%- include('../partials/admin-sidebar') %>
 
-  <div class="flex-1 flex flex-col h-screen overflow-hidden">
+   <div class="flex-1 flex flex-col min-h-screen">
     <header class="bg-white shadow-sm border-b px-6 py-4 flex items-center z-10 relative">
       <div class="flex items-center gap-4">
         <button @click="sidebarOpen = true" class="md:hidden text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-orange-500">

@@ -50,7 +50,7 @@ async function addItem(req, res) {
         image: imagePath
       }
     });
-    appCache.refresh();
+    await appCache.refresh();
     res.redirect('/admin/menu');
   } catch (err) {
     console.error(err);
@@ -89,7 +89,7 @@ async function editItem(req, res) {
     }
 
     await db.menuItem.update({ where: { uid }, data: updateData });
-    appCache.refresh();
+    await appCache.refresh();
     res.redirect('/admin/menu');
   } catch (err) {
     console.error(err);
@@ -104,7 +104,7 @@ async function deleteItem(req, res) {
       await deleteImage(item.image);
     }
     await db.menuItem.delete({ where: { uid: req.params.uid } });
-    appCache.refresh();
+    await appCache.refresh();
   } catch (e) {
     console.error(e);
   }

@@ -20,7 +20,7 @@
       </div>
     </div>
     
-    <div id="carousel-track" class="flex gap-6 overflow-x-hidden pb-4" style="scroll-behavior:smooth;">
+    <div id="carousel-track" class="flex gap-6 overflow-x-auto pb-4 custom-scroll" style="scroll-behavior:smooth;">
       <button data-action="filter-category" data-category-id="null" onclick="window.location.href='/'" class="flex flex-col items-center gap-2 group shrink-0 <%= currentCategory === null ? 'opacity-100' : 'opacity-60 hover:opacity-100' %>">
         <div class="w-[124px] h-[124px] rounded-full bg-orange-100 flex items-center justify-center overflow-hidden shadow-sm <%= currentCategory === null ? 'border-[3px] border-orange-500' : '' %>">
           <svg class="w-16 h-16 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
