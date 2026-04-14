@@ -25,6 +25,17 @@
   <meta name="apple-mobile-web-app-title" content="Lazeez">
   <link rel="canonical" href="<%= _canonicalUrl %>">
 
+  <!-- Google Analytics -->
+  <% if (typeof googleAnalyticsId !== 'undefined' && googleAnalyticsId) { %>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=<%= googleAnalyticsId %>"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', '<%= googleAnalyticsId %>');
+  </script>
+  <% } %>
+
   <meta property="og:locale" content="en_US">
   <meta property="og:type" content="<%= _ogType %>">
   <meta property="og:title" content="<%= typeof title !== 'undefined' ? title + ' | Order Food Online' : 'Order Food Online | Lazeez' %>">
@@ -41,10 +52,11 @@
   <meta name="twitter:description" content="<%= _metaDescription %>">
   <meta name="twitter:image" content="<%= _ogImage %>">
 
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.svg">
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.svg">
   <link rel="manifest" href="/site.webmanifest">
 
   <% if (typeof structuredData !== 'undefined' && structuredData) { %>
@@ -128,50 +140,19 @@
   <link rel="stylesheet" href="/css/premium.css">
 </head>
 <body class="flex flex-col min-h-screen text-gray-800 antialiased selection:bg-orange-500 selection:text-white bg-white">
-
-  <!-- Global Page Loader -->
-  <div id="global-page-loader" style="position:fixed;inset:0;z-index:99999;background:rgba(255,255,255,0.96);display:flex;align-items:center;justify-content:center;">
-    <div style="width:36px;height:36px;border:3px solid #f3f3f3;border-top:3px solid #fc8019;border-radius:50%;animation:resto-spin 0.7s linear infinite;"></div>
-  </div>
-  <style>
-    @keyframes resto-spin { to { transform: rotate(360deg); } }
-  </style>
+  
   <script>
     // Global loader controls
     window.RestoLoader = {
-      show: function() { var el = document.getElementById('global-page-loader'); if (el) el.style.display = 'flex'; },
-      hide: function() { var el = document.getElementById('global-page-loader'); if (el) el.style.display = 'none'; }
+      show: function() { },
+      hide: function() { }
     };
 
+
     (function() {
-      var loader = document.getElementById('global-page-loader');
-      function hideLoader() { window.RestoLoader.hide(); }
-      function showLoader() { window.RestoLoader.show(); }
-      
-      if (document.readyState === 'complete' || document.readyState === 'interactive') {
-        setTimeout(hideLoader, 200);
-      } else {
-        document.addEventListener('DOMContentLoaded', function() { setTimeout(hideLoader, 200); });
-      }
-      
-      window.addEventListener('pageshow', function(e) {
-        if (e.persisted) hideLoader();
-      });
-
-      document.addEventListener('click', function(e) {
-        var a = e.target.closest('a');
-        if (!a || !a.href) return;
-        if (a.href.startsWith('javascript:') || a.href.includes('#') || a.target === '_blank') return;
-        if (a.hasAttribute('onclick') || a.getAttribute('href') === '#') return;
-        showLoader();
-      });
-
-      document.addEventListener('submit', function(e) {
-        var form = e.target;
-        if (form.hasAttribute('onsubmit') || form.getAttribute('data-loader') === 'false') return;
-        showLoader();
-      });
+      // Removed global loader logic
     })();
+
 
     // Global UI Helper for button loading
     window.RestoUI = {
@@ -195,7 +176,7 @@
 
   <!-- Included Navbar -->
   <%- include('navbar') %>
-
+  <%- include('skeleton') %>
   <!-- Global Confirm Modal -->
   <%- include('confirmModal') %>
   

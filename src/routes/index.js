@@ -14,6 +14,25 @@ router.get('/offers/api/count', (req, res, next) => require('../controllers/offe
 router.post('/offers/mark-viewed', (req, res, next) => require('../controllers/offerController').markViewed(req, res, next));
 router.post('/offers/dismiss-popup', (req, res, next) => require('../controllers/offerController').dismissPopup(req, res, next));
 
+// Legal pages
+router.get('/terms', (req, res) => {
+  res.render('storefront/terms', {
+    title: 'Terms & Conditions',
+    metaDescription: 'Read the Terms & Conditions for using Lazeez food ordering platform. Learn about our ordering, delivery, cancellation, and refund policies.',
+    canonicalUrl: '/terms',
+    robots: 'index, follow'
+  });
+});
+
+router.get('/privacy', (req, res) => {
+  res.render('storefront/privacy', {
+    title: 'Privacy Policy',
+    metaDescription: 'Learn how Lazeez collects, uses, and protects your personal information. Read our comprehensive privacy policy and understand your data rights.',
+    canonicalUrl: '/privacy',
+    robots: 'index, follow'
+  });
+});
+
 router.get('/sitemap.xml', async (req, res) => {
   try {
     const siteUrl = process.env.SITE_URL || 'https://lazeez.com';
@@ -46,6 +65,19 @@ router.get('/sitemap.xml', async (req, res) => {
     xml += '    <priority>0.7</priority>\n';
     xml += '  </url>\n';
 
+    xml += '  <url>\n';
+    xml += '    <loc>' + siteUrl + '/terms</loc>\n';
+    xml += '    <lastmod>' + now + '</lastmod>\n';
+    xml += '    <changefreq>monthly</changefreq>\n';
+    xml += '    <priority>0.4</priority>\n';
+    xml += '  </url>\n';
+
+    xml += '  <url>\n';
+    xml += '    <loc>' + siteUrl + '/privacy</loc>\n';
+    xml += '    <lastmod>' + now + '</lastmod>\n';
+    xml += '    <changefreq>monthly</changefreq>\n';
+    xml += '    <priority>0.4</priority>\n';
+    xml += '  </url>\n';
     categories.forEach(function(cat) {
       xml += '  <url>\n';
       xml += '    <loc>' + siteUrl + '/category/' + cat.id + '</loc>\n';

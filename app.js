@@ -2,9 +2,7 @@ const express = require('express');
 const path = require('path');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
-const { createClient } = require('redis');
-const connectRedis = require('connect-redis');
-const RedisStore = connectRedis.RedisStore || connectRedis.default || connectRedis;
+
 const dotenv = require('dotenv');
 const db = require('./src/config/db');
 
@@ -42,42 +40,89 @@ const sessionConfig = {
   name: 'resto.sid'
 };
 
-const valkeyUrl = process.env.VALKEY_URL || 'redis://127.0.0.1:6379';
-const valkeyClient = createClient({
-  url: valkeyUrl,
-  disableOfflineQueue: true, // Crucial: Prevents extreme app slowness if Redis is down
-  socket: {
-    connectTimeout: 2000,
-    reconnectStrategy: (retries) => Math.min(retries * 500, 5000)
+class UpstashRestStore extends session.Store {
+  constructor(options) {
+    super(options);
+    const apiToken = process.env.KV_REST_API_TOKEN || '';
+    if (process.env.KV_REST_API_URL) {
+      this.restUrl = process.env.KV_REST_API_URL;
+      this.token = apiToken;
+    } else {
+      const parsed = new URL(options.url || 'redis://127.0.0.1:6379');
+      this.restUrl = 'https://' + parsed.hostname;
+      this.token = parsed.password || parsed.username || apiToken;
+    }
+    this.ttl = options.ttl || 86400;
   }
-});
-let redisConnected = false;
-valkeyClient.on('connect', () => {
-  redisConnected = true;
-  console.log('Valkey/Redis connected successfully');
-});
-valkeyClient.on('error', (err) => {
-  redisConnected = false;
-});
-valkeyClient.connect().catch((err) => {
-  console.warn('Valkey/Redis connection unavailable. Using fallback memory session handling indirectly via node-redis failure');
-});
+  
+  async _request(body) {
+    if (!this.token || !this.restUrl) return null;
+    try {
+      const res = await fetch(this.restUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) throw new Error('Upstash KV error: ' + await res.text());
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      return data.result;
+    } catch(e) {
+      console.error('Upstash fetch failed:', e.message);
+      return null;
+    }
+  }
 
-const store = new RedisStore({
-  client: valkeyClient,
-  ttl: SESSION_MAX_AGE / 1000,
-  disableTouch: true // Improve performance
-});
+  get(sid, cb) {
+    this._request(["GET", `sess:${sid}`])
+      .then(res => {
+        if (!res) return cb(null, null);
+        try { cb(null, typeof res === 'string' ? JSON.parse(res) : res); }
+        catch(e) { cb(null, null); }
+      })
+      .catch(err => { cb(null, null); });
+  }
+  
+  set(sid, sessionData, cb) {
+    const val = JSON.stringify(sessionData);
+    this._request(["SET", `sess:${sid}`, val, "EX", this.ttl])
+      .then(() => cb(null))
+      .catch(err => cb(err));
+  }
+  
+  destroy(sid, cb) {
+    this._request(["DEL", `sess:${sid}`])
+      .then(() => cb(null))
+      .catch(err => cb(err));
+  }
+}
+
+const isProduction = process.env.NODE_ENV === 'production' || process.env.VALKEY_URL || process.env.KV_REST_API_URL;
+const store = isProduction ? new UpstashRestStore({
+  url: process.env.VALKEY_URL,
+  ttl: Math.floor(SESSION_MAX_AGE / 1000)
+}) : new session.MemoryStore();
 
 sessionConfig.store = store;
 app.use(session(sessionConfig));
 console.log('Session store initialized');
 
 
-// Global template variables
-app.use((req, res, next) => {
-  res.locals.req = req;
-  res.locals.user = req.session.user || null;
+  // Global template variables
+  app.use((req, res, next) => {
+    res.locals.routes = {
+      home: '/',
+      menu: '/menu',
+      offers: '/offers',
+      cart: '/cart',
+      orders: '/orders',
+      profile: '/auth/profile'
+    };
+    res.locals.req = req;
+    res.locals.user = req.session.user || null;
   res.locals.cart = req.session.cart || [];
   // Onboarding wizard: show if user just logged in and profile is incomplete
   var u = req.session.user;

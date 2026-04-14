@@ -18,15 +18,6 @@
       <p class="text-[13px] text-[#7e808c] mb-1">Pizzas, Fast Food, North Indian</p>
       <div class="flex items-center text-[13px] text-[#7e808c] gap-2">
         <span>Dhajanagar,Udaipur Gomati Tripura</span>
-        <span>|</span>
-        <span id="menu-distance">...</span>
-      </div>
-      <div class="flex items-center gap-2 mt-4 text-[#3d4152] font-bold text-sm">
-        <svg class="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-        <span id="menu-time">...</span>
-        <span class="text-gray-300 mx-2">|</span>
-        <svg class="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        <span>₹400 for two</span>
       </div>
     </div>
 
@@ -43,7 +34,7 @@
   </div>
 
   <!-- Search / Filters inside Menu -->
-  <div class="flex items-center gap-4 mb-8">
+  <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-8">
     <!-- Search Bar (AJAX) -->
     <div class="relative w-full">
       <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
@@ -54,42 +45,28 @@
     </div>
   </div>
 
-  <!-- Category Filter Buttons Row (AJAX) -->
-  <div id="category-filters" class="flex gap-3 overflow-x-auto pb-4 custom-scroll no-scrollbar">
-    <button data-action="filter-category" data-id="null" 
-       class="cat-btn border border-subtle rounded-full px-4 py-1.5 text-sm font-semibold whitespace-nowrap <%= !currentCategory ? 'bg-[#3d4152] text-white border-[#3d4152]' : 'text-[#3d4152] bg-white hover:bg-gray-50' %>">
-      All
-    </button>
-    <% categories.forEach(cat => { %>
-      <button data-action="filter-category" data-id="<%= cat.id %>" 
-         class="cat-btn border border-subtle rounded-full px-4 py-1.5 text-sm font-semibold whitespace-nowrap <%= currentCategory === cat.id ? 'bg-[#3d4152] text-white border-[#3d4152]' : 'text-[#3d4152] bg-white hover:bg-gray-50' %>">
-        <%= cat.name %>
-      </button>
-    <% }) %>
-  </div>
-
-  <!-- Food Type Filter Buttons Row (AJAX) -->
-  <% 
-    const isCurrentLiquid = currentCategory && categories.find(c => c.id === currentCategory) && 
-      ['beverage', 'tea', 'coffee', 'juice', 'shake', 'drink', 'liquid'].some(k => categories.find(c => c.id === currentCategory).name.toLowerCase().includes(k));
-  %>
-  <div id="food-type-filters" class="flex gap-3 overflow-x-auto pb-6 border-b border-[#f1f1f6] custom-scroll no-scrollbar mt-2 <%= isCurrentLiquid ? 'hidden' : '' %>">
-    <button data-action="filter-food-type" data-type="all"
-       class="ft-btn border border-subtle rounded-full px-4 py-1.5 text-sm font-semibold whitespace-nowrap <%= (!currentFoodType || currentFoodType === 'all') ? 'bg-[#3d4152] text-white border-[#3d4152]' : 'text-[#3d4152] bg-white hover:bg-gray-50' %>">
-      All
-    </button>
-    <button data-action="filter-food-type" data-type="veg"
-       class="ft-btn border border-subtle rounded-full px-4 py-1.5 text-sm font-semibold whitespace-nowrap <%= currentFoodType === 'veg' ? 'bg-[#3d4152] text-white border-[#3d4152]' : 'text-[#3d4152] bg-white hover:bg-gray-50' %>">
-      Veg
-    </button>
-    <button data-action="filter-food-type" data-type="nonveg"
-       class="ft-btn border border-subtle rounded-full px-4 py-1.5 text-sm font-semibold whitespace-nowrap <%= currentFoodType === 'nonveg' ? 'bg-[#3d4152] text-white border-[#3d4152]' : 'text-[#3d4152] bg-white hover:bg-gray-50' %>">
-      Non-Veg
-    </button>
-    <button data-action="filter-food-type" data-type="bestseller"
-       class="ft-btn border border-subtle rounded-full px-4 py-1.5 text-sm font-semibold whitespace-nowrap <%= currentFoodType === 'bestseller' ? 'bg-[#3d4152] text-white border-[#3d4152]' : 'text-[#3d4152] bg-white hover:bg-gray-50' %>">
-      Best Seller
-    </button>
+  <!-- Dual Dropdown Filters -->
+  <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-8">
+    <div class="flex-1 w-full">
+      <label class="text-[10px] font-bold text-[#7e808c] uppercase tracking-wider block mb-1">Category</label>
+      <select id="menu-category-select" onchange="filterByCategory(this.value)" 
+              class="w-full bg-white border border-[#e9e9eb] rounded-xl px-3 py-2.5 text-sm font-semibold text-[#3d4152] outline-none focus:ring-2 focus:ring-orange-500/30 transition-all">
+        <option value="null" <%= !currentCategory ? 'selected' : '' %>>All Categories</option>
+        <% categories.forEach(cat => { %>
+          <option value="<%= cat.id %>" <%= currentCategory === cat.id ? 'selected' : '' %>> <%= cat.name %> </option>
+        <% }) %>
+      </select>
+    </div>
+    <div class="flex-1 w-full">
+      <label class="text-[10px] font-bold text-[#7e808c] uppercase tracking-wider block mb-1">Food Type</label>
+      <select id="menu-food-type-select" onchange="filterByFoodType(this.value)" 
+              class="w-full bg-white border border-[#e9e9eb] rounded-xl px-3 py-2.5 text-sm font-semibold text-[#3d4152] outline-none focus:ring-2 focus:ring-orange-500/30 transition-all">
+        <option value="all" <%= (!currentFoodType || currentFoodType === 'all') ? 'selected' : '' %>>All</option>
+        <option value="veg" <%= currentFoodType === 'veg' ? 'selected' : '' %>>Veg</option>
+        <option value="nonveg" <%= currentFoodType === 'nonveg' ? 'selected' : '' %>>Non-Veg</option>
+        <option value="bestseller" <%= currentFoodType === 'bestseller' ? 'selected' : '' %>>Best Seller</option>
+      </select>
+    </div>
   </div>
 
   <!-- Items List Container -->
@@ -118,11 +95,11 @@
               <% } %>
             <% } %>
             
-            <a href="/item/<%= item.uid %>" class="block">
-              <h3 class="text-lg font-bold text-[#3d4152] leading-tight mb-1 group-hover:text-orange-500 transition-colors"><%= item.name %></h3>
-            </a>
-            <div class="font-medium text-[#3d4152] text-[15px] mb-3">₹<%= item.price.toFixed(2) %></div>
-            <p class="text-[#282c3f]/60 text-sm leading-relaxed line-clamp-2 pr-4 font-light"><%= item.description %></p>
+             <a href="/item/<%= item.uid %>" class="block">
+               <h3 class="text-lg font-bold text-[#3d4152] leading-tight mb-1 group-hover:text-orange-500 transition-colors"><%= item.name %></h3>
+             </a>
+                <div class="font-medium text-[#3d4152] text-[15px] mb-3">₹<%= Number(item.price).toFixed(2) %></div>
+             <p class="text-[#282c3f]/60 text-sm leading-relaxed line-clamp-2 pr-4 font-light"><%= item.description %></p>
           </div>
 
           <div class="relative w-[118px] h-[96px] sm:w-[156px] sm:h-[144px] flex-shrink-0">
@@ -198,6 +175,17 @@
   function loadItems() {
     updateActiveStates();
     var list = document.getElementById('menu-items-list');
+    
+    var skeletonTpl = document.getElementById('skeleton-item-row');
+    var skeletonHtml = '';
+    if (skeletonTpl) {
+      for (var i = 0; i < 5; i++) {
+        skeletonHtml += skeletonTpl.innerHTML;
+      }
+    } else {
+      skeletonHtml = '<div class="py-12 text-center"><svg class="w-8 h-8 animate-spin mx-auto text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4m-7.07-3.93l2.83-2.83m8.48-8.48l2.83-2.83M2 12h4m12 0h4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83"/></svg></div>';
+    }
+    list.innerHTML = skeletonHtml;
     list.style.opacity = '0.5';
     
     var params = new URLSearchParams();
@@ -227,7 +215,7 @@
             return '<div class="menu-item-row flex justify-between items-start border-b border-subtle pb-10 group '+(item.available?'':'opacity-50')+'">' +
               '<div class="flex-1 min-w-0 pr-3 sm:pr-4">' + dietIcon + 
               '<a href="/item/'+item.uid+'" class="block"><h3 class="text-lg font-bold text-[#3d4152] leading-tight mb-1 group-hover:text-orange-500 transition-colors">'+item.name+'</h3></a>' +
-              '<div class="font-medium text-[#3d4152] text-[15px] mb-3">₹'+item.price.toFixed(2)+'</div>' +
+              '<div class="font-medium text-[#3d4152] text-[15px] mb-3">₹' + Number(item.price).toFixed(2) + '</div>' +
               '<p class="text-[#282c3f]/60 text-sm leading-relaxed line-clamp-2 pr-4 font-light">'+(item.description||'')+'</p></div>' +
               '<div class="relative w-[118px] h-[96px] sm:w-[156px] sm:h-[144px] flex-shrink-0">' +
               '<a href="/item/'+item.uid+'" class="block w-full h-full"><div class="w-full h-full rounded-xl overflow-hidden bg-gray-100 '+(item.available?'':'grayscale opacity-50')+'">' +

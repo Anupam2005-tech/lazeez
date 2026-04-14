@@ -47,22 +47,22 @@
     </div>
   </div>
 
-  <!-- Diet / Best Seller Toggle (AJAX) -->
-  <div id="food-type-filters" class="flex items-center gap-3 overflow-x-auto pb-6 border-b border-[#f1f1f6] custom-scroll mb-10">
-    <button data-action="filter-food-type" data-type="all"
-       class="food-type-btn border border-subtle rounded-full px-4 py-1.5 text-sm font-semibold whitespace-nowrap <%= currentFoodType === 'all' ? 'bg-[#3d4152] text-white border-[#3d4152]' : 'text-[#3d4152] bg-white hover:bg-gray-50' %>">
+  <!-- Diet / Best Seller Filters -->
+  <div class="mb-10 flex items-center gap-3 overflow-x-auto pb-2 no-scrollbar">
+    <button onclick="filterByFoodType('all')" 
+            class="filter-btn border border-subtle rounded-full px-4 py-1.5 text-sm font-semibold whitespace-nowrap transition-all duration-300 <%= currentFoodType === 'all' ? 'bg-[#3d4152] text-white border-[#3d4152]' : 'text-[#3d4152] bg-white hover:bg-gray-50' %>">
       All
     </button>
-    <button data-action="filter-food-type" data-type="veg"
-       class="food-type-btn border border-subtle rounded-full px-4 py-1.5 text-sm font-semibold whitespace-nowrap <%= currentFoodType === 'veg' ? 'bg-[#3d4152] text-white border-[#3d4152]' : 'text-[#3d4152] bg-white hover:bg-gray-50' %>">
+    <button onclick="filterByFoodType('veg')"
+            class="filter-btn border border-subtle rounded-full px-4 py-1.5 text-sm font-semibold whitespace-nowrap transition-all duration-300 <%= currentFoodType === 'veg' ? 'bg-[#3d4152] text-white border-[#3d4152]' : 'text-[#3d4152] bg-white hover:bg-gray-50' %>">
       Veg
     </button>
-    <button data-action="filter-food-type" data-type="nonveg"
-       class="food-type-btn border border-subtle rounded-full px-4 py-1.5 text-sm font-semibold whitespace-nowrap <%= currentFoodType === 'nonveg' ? 'bg-[#3d4152] text-white border-[#3d4152]' : 'text-[#3d4152] bg-white hover:bg-gray-50' %>">
+    <button onclick="filterByFoodType('nonveg')"
+            class="filter-btn border border-subtle rounded-full px-4 py-1.5 text-sm font-semibold whitespace-nowrap transition-all duration-300 <%= currentFoodType === 'nonveg' ? 'bg-[#3d4152] text-white border-[#3d4152]' : 'text-[#3d4152] bg-white hover:bg-gray-50' %>">
       Non-Veg
     </button>
-    <button data-action="filter-food-type" data-type="bestseller"
-       class="food-type-btn border border-subtle rounded-full px-4 py-1.5 text-sm font-semibold whitespace-nowrap <%= currentFoodType === 'bestseller' ? 'bg-[#3d4152] text-white border-[#3d4152]' : 'text-[#3d4152] bg-white hover:bg-gray-50' %>">
+    <button onclick="filterByFoodType('bestseller')"
+            class="filter-btn border border-subtle rounded-full px-4 py-1.5 text-sm font-semibold whitespace-nowrap transition-all duration-300 <%= currentFoodType === 'bestseller' ? 'bg-[#3d4152] text-white border-[#3d4152]' : 'text-[#3d4152] bg-white hover:bg-gray-50' %>">
       Best Seller
     </button>
   </div>
@@ -130,7 +130,7 @@
     >
       <button
         type="button"
-        @click="window.innerWidth < 640 ? window.location.href='/menu' : open()"
+        @click="window.innerWidth < 640 ? window.location.href='<%= routes.menu %>' : open()"
         class="fixed left-4 bottom-4 z-[65] w-14 h-14 rounded-full bg-slate-900/95 text-white shadow-xl hover:bg-slate-800 transition-colors flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-white/30 sm:flex"
         aria-label="Open menu"
       >
@@ -324,14 +324,12 @@
                 <% } %>
               </div>
               
-              <div class="flex items-center gap-1 text-[15px] font-semibold text-[#3d4152] mb-1">
-                <svg class="w-5 h-5 text-white bg-green-600 rounded-full p-0.5" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-                <span><%= itemRatings[item.id] || '—' %></span>
-                <span class="text-gray-500 font-bold mx-1.5">&bull;</span>
-                <span>₹<%= item.price %></span>
-              </div>
+                  <div class="flex items-center gap-1 text-[15px] font-semibold text-[#3d4152] mb-1">
+                    <svg class="w-5 h-5 text-white bg-green-600 rounded-full p-0.5" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                    <span><%= itemRatings[item.id] || '—' %></span>
+                  </div>
               
               <div class="text-[14px] text-[#686b78] line-clamp-1 font-medium">
                 <%= item.description || 'Deliciously prepared for you.' %>
@@ -389,11 +387,10 @@ function filterByCategory(catId) {
 }
 
 function updateFilterButtons() {
-  document.querySelectorAll('.food-type-btn').forEach(function(btn) {
-    var isActive = btn.dataset.type === __CURRENT_FOOD_TYPE__;
-    btn.className = 'food-type-btn border border-subtle rounded-full px-4 py-1.5 text-sm font-semibold whitespace-nowrap ' +
-      (isActive ? 'bg-[#3d4152] text-white border-[#3d4152]' : 'text-[#3d4152] bg-white hover:bg-gray-50');
-  });
+  var select = document.getElementById('food-type-select');
+  if (select) {
+    select.value = __CURRENT_FOOD_TYPE__;
+  }
   // Update section header
   var headerEl = document.getElementById('items-section-header');
   if (headerEl) {
@@ -413,12 +410,23 @@ function updateFilterButtons() {
 function loadFilteredItems() {
   var grid = document.getElementById('items-grid');
   if (!grid) return;
-  grid.innerHTML = '<div class="col-span-full py-12 text-center"><svg class="w-8 h-8 animate-spin mx-auto text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4m-7.07-3.93l2.83-2.83m8.48-8.48l2.83-2.83M2 12h4m12 0h4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83"/></svg></div>';
-
+  
+  // Show skeletons
+  var skeletonTpl = document.getElementById('skeleton-item-card');
+  var skeletonHtml = '';
+  if (skeletonTpl) {
+    for (var i = 0; i < 8; i++) {
+      skeletonHtml += skeletonTpl.innerHTML;
+    }
+  } else {
+    skeletonHtml = '<div class="col-span-full py-12 text-center"><svg class="w-8 h-8 animate-spin mx-auto text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4m-7.07-3.93l2.83-2.83m8.48-8.48l2.83-2.83M2 12h4m12 0h4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83"/></svg></div>';
+  }
+  grid.innerHTML = skeletonHtml;
+  
   var params = new URLSearchParams();
   if (__CURRENT_FOOD_TYPE__ && __CURRENT_FOOD_TYPE__ !== 'all') params.set('foodType', __CURRENT_FOOD_TYPE__);
   if (__CURRENT_CATEGORY__) params.set('category', __CURRENT_CATEGORY__);
-
+  
   fetch('/api/menu-items?' + params.toString())
     .then(function(r) { return r.json(); })
     .then(function(items) {
@@ -465,7 +473,7 @@ function renderItemsGrid(items) {
     var displayClass = index >= 8 ? 'hidden' : '';
     var ratingDisplay = item.avgRating > 0 ? item.avgRating : '&#8212;';
 
-    return '<div class="group menu-item-card ' + displayClass + '" data-index="' + index + '"><div class="relative"><a href="/item/' + item.uid + '" class="block"><div class="relative w-full aspect-[4/3] rounded-[16px] overflow-hidden mb-3 bg-gray-100 shadow-sm cursor-pointer ' + grayscale + '">' + imgHtml + '<div class="absolute inset-0 bg-gradient-to-t from-[#1b1e24]/60 via-transparent to-transparent z-10 w-full h-full pointer-events-none"></div>' + unavailableBadge + bestBadge + '</div></a>' + addBtn + '</div><a href="/item/' + item.uid + '" class="block"><div class="px-1 cursor-pointer"><h3 class="text-[17px] font-bold text-[#3d4152] truncate mb-0.5" title="' + item.name + '">' + item.name + '</h3><div class="flex items-center gap-2 mb-1">' + vegBadge + '</div><div class="flex items-center gap-1 text-[15px] font-semibold text-[#3d4152] mb-1"><svg class="w-5 h-5 text-white bg-green-600 rounded-full p-0.5" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg><span>' + ratingDisplay + '</span><span class="text-gray-500 font-bold mx-1.5">&bull;</span><span>₹' + item.price + '</span></div><div class="text-[14px] text-[#686b78] line-clamp-1 font-medium">' + (item.description || 'Deliciously prepared for you.') + '</div></div></a></div>';
+    return '<div class="group menu-item-card ' + displayClass + '" data-index="' + index + '"><div class="relative"><a href="/item/' + item.uid + '" class="block"><div class="relative w-full aspect-[4/3] rounded-[16px] overflow-hidden mb-3 bg-gray-100 shadow-sm cursor-pointer ' + grayscale + '">' + imgHtml + '<div class="absolute inset-0 bg-gradient-to-t from-[#1b1e24]/60 via-transparent to-transparent z-10 w-full h-full pointer-events-none"></div>' + unavailableBadge + bestBadge + '</div></a>' + addBtn + '</div><a href="/item/' + item.uid + '" class="block"><div class="px-1 cursor-pointer"><h3 class="text-[17px] font-bold text-[#3d4152] truncate mb-0.5" title="' + item.name + '">' + item.name + '</h3><div class="flex items-center gap-2 mb-1">' + vegBadge + '</div><div class="flex items-center gap-1 text-[15px] font-semibold text-[#3d4152] mb-1"><svg class="w-5 h-5 text-white bg-green-600 rounded-full p-0.5" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg><span>' + ratingDisplay + '</span></div><div class="text-[14px] text-[#686b78] line-clamp-1 font-medium">' + (item.description || 'Deliciously prepared for you.') + '</div></div></a></div>';
   }).join('');
 }
 

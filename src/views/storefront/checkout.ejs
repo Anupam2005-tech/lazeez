@@ -200,9 +200,9 @@
               </p>
             </div>
 
-            <button type="submit" id="checkout-pay-btn" class="w-full bg-[#60b246] text-white font-bold py-4 text-[15px] uppercase tracking-wider mt-6 hover:shadow-lg hover:bg-green-600 transition-all text-center">
-              PAY ₹<%= grandTotal.toFixed(2) %> SECURELY
-            </button>
+             <button type="submit" id="checkout-pay-btn" class="w-full bg-[#60b246] text-white font-bold py-4 text-[15px] uppercase tracking-wider mt-6 hover:shadow-lg hover:bg-green-600 transition-all text-center">
+               PAY SECURELY
+             </button>
 
           </div>
         </div>
@@ -259,24 +259,24 @@
           </div>
         </div>
         
-        <div class="border-t border-[#e9e9eb] mt-3 pt-3 flex justify-between items-center text-[15px] font-bold text-[#282c3f]">
-          <span>TO PAY</span>
-          <span id="checkout-to-pay">₹<%= grandTotal.toFixed(2) %></span>
-        </div>
+          <div class="border-t border-[#e9e9eb] mt-3 pt-3 flex justify-between items-center text-[15px] font-bold text-[#282c3f]">
+            <span>TO PAY</span>
+            <span id="checkout-to-pay">...</span>
+          </div>
       </div>
 
-      <!-- Delivery Estimate -->
-      <div class="bg-gray-50 p-4 mb-4">
+       <!-- Delivery Estimate -->
+       <div class="bg-gray-50 p-4 mb-4">
         <div class="flex items-center gap-3 mb-2">
           <svg class="w-5 h-5 text-orange-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
-          <span class="text-[14px] font-bold text-[#282c3f]">Estimated delivery: <span id="checkout-delivery-time" class="text-orange-500">...</span></span>
+          <span class="text-[14px] font-bold text-[#282c3f]">Estimated delivery</span>
         </div>
-        <p class="text-[12px] text-[#7e808c] leading-relaxed ml-8">
-          We are trying to deliver your order by this time, but it may take a few minutes more. This can be due to traffic, weather, or other circumstances.
-        </p>
-      </div>
+         <p class="text-[12px] text-[#7e808c] leading-relaxed ml-8">
+           We are trying to deliver your order by <span id="checkout-delivery-time" class="font-bold text-[#3d4152]">...</span>, but it may take a few minutes more. This can be due to traffic, weather, or other circumstances.
+         </p>
+       </div>
       
       <div class="mt-4 p-3 bg-gray-50 border border-[#e9e9eb] text-[12px] text-[#93959f] leading-relaxed">
         <span class="font-bold text-[#535665]">Review your order and address details to avoid cancellations.</span> 
