@@ -30,7 +30,7 @@ const sessionConfig = {
   secret: process.env.SESSION_SECRET || 'fallback_secret',
   resave: false,
   saveUninitialized: false,
-  rolling: true,
+  rolling: false, // Don't reset maxAge on every request (saves a session write per request)
   cookie: {
     maxAge: SESSION_MAX_AGE,
     httpOnly: true,
@@ -98,6 +98,11 @@ class UpstashRestStore extends session.Store {
       .then(() => cb(null))
       .catch(err => cb(err));
   }
+  
+  // No-op touch — prevents express-session from re-writing unchanged sessions
+  touch(sid, session, cb) {
+    cb(null);
+  }
 }
 
 const isProduction = process.env.NODE_ENV === 'production' || process.env.VALKEY_URL || process.env.KV_REST_API_URL;
@@ -145,79 +150,81 @@ console.log('Session store initialized');
   next();
 });
 
-// Caching for store ratings to prevent DB bottleneck
+// Combined data middleware — runs rating + offers queries in PARALLEL, skips non-HTML routes
 let cachedStoreRating = { value: 4.3, count: 1300, lastUpdated: 0 };
-const RATING_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const RATING_CACHE_TTL = 10 * 60 * 1000; // 10 minutes (was 5 — longer = fewer cold-start DB hits)
+
+let cachedOffers = { data: [], lastUpdated: 0 };
+const OFFERS_CACHE_TTL = 5 * 60 * 1000; // 5 minutes (was 1 — much less DB pressure)
 
 app.use(async (req, res, next) => {
+  // Skip heavy DB work for routes that don't render HTML templates
+  const p = req.path;
+  if (p.startsWith('/api') || p.startsWith('/events') || p.startsWith('/favicon') || p.endsWith('.json')) {
+    res.locals.storeRating = cachedStoreRating.value;
+    res.locals.storeRatingCount = cachedStoreRating.count;
+    res.locals.unseenOfferCount = 0;
+    res.locals.popupOffer = null;
+    return next();
+  }
+
+  const now = Date.now();
+  const needsRating = now - cachedStoreRating.lastUpdated > RATING_CACHE_TTL;
+  const needsOffers = now - cachedOffers.lastUpdated > OFFERS_CACHE_TTL;
+
   try {
-    const now = Date.now();
-    if (now - cachedStoreRating.lastUpdated > RATING_CACHE_TTL) {
-      const BASE_RATING = 4.3;
-      const BASE_COUNT = 1300;
-      const allFeedback = await db.feedback.findMany({ select: { storeRating: true } });
-      const totalRealRating = allFeedback.reduce((sum, f) => sum + (f.storeRating || 0), 0);
-      const totalRealCount = allFeedback.length;
-      
+    // Run both DB queries in PARALLEL instead of sequentially
+    const [ratingResult, offersResult] = await Promise.all([
+      needsRating
+        ? db.feedback.findMany({ select: { storeRating: true } }).catch(() => null)
+        : Promise.resolve(null),
+      needsOffers
+        ? db.offer.findMany({ where: { active: true }, orderBy: { createdAt: 'desc' } }).catch(() => null)
+        : Promise.resolve(null)
+    ]);
+
+    // Update rating cache
+    if (ratingResult !== null) {
+      const BASE_RATING = 4.3, BASE_COUNT = 1300;
+      const totalRealRating = ratingResult.reduce((sum, f) => sum + (f.storeRating || 0), 0);
+      const totalRealCount = ratingResult.length;
       const weightedRating = ((BASE_RATING * BASE_COUNT) + totalRealRating) / (BASE_COUNT + totalRealCount);
-      
       cachedStoreRating = {
         value: parseFloat(weightedRating.toFixed(1)),
         count: BASE_COUNT + totalRealCount,
         lastUpdated: now
       };
     }
-    
-    res.locals.storeRating = cachedStoreRating.value;
-    res.locals.storeRatingCount = cachedStoreRating.count;
-  } catch (e) {
-    res.locals.storeRating = cachedStoreRating.value || 4.3;
-    res.locals.storeRatingCount = cachedStoreRating.count || 1300;
-  }
-  next();
-});
 
-
-// Caching for offers to prevent DB bottleneck
-let cachedOffers = { data: [], lastUpdated: 0 };
-const OFFERS_CACHE_TTL = 60 * 1000; // 1 minute
-
-app.use(async (req, res, next) => {
-  try {
-    const now = Date.now();
-    if (now - cachedOffers.lastUpdated > OFFERS_CACHE_TTL) {
-      const activeOffers = await db.offer.findMany({
-        where: { active: true },
-        orderBy: { createdAt: 'desc' }
-      });
-      cachedOffers = { data: activeOffers, lastUpdated: now };
+    // Update offers cache
+    if (offersResult !== null) {
+      cachedOffers = { data: offersResult, lastUpdated: now };
     }
+  } catch (e) {
+    // Silently use cached values on error
+  }
 
+  // Set rating locals
+  res.locals.storeRating = cachedStoreRating.value;
+  res.locals.storeRatingCount = cachedStoreRating.count;
+
+  // Set offers locals
+  try {
     const activeOffers = cachedOffers.data;
-
-    // Read dismissed offer IDs from persistent cookie (survives session expiry)
     let popupDismissedOfferIds = [];
     try {
       const cookieVal = req.cookies?.offer_popup_dismissed;
       if (cookieVal) popupDismissedOfferIds = JSON.parse(cookieVal);
       if (!Array.isArray(popupDismissedOfferIds)) popupDismissedOfferIds = [];
-    } catch (e) {
-      popupDismissedOfferIds = [];
-    }
+    } catch (e) { popupDismissedOfferIds = []; }
 
     if (!req.session.viewedOfferIds) req.session.viewedOfferIds = [];
-    
     const unseen = activeOffers.filter(o => !req.session.viewedOfferIds.includes(o.id));
     res.locals.unseenOfferCount = unseen.length;
 
-    // Popup: show once after new offer, never again until dismissed
     if (unseen.length > 0 && !req.path.startsWith('/offers')) {
       const notDismissed = unseen.filter(o => !popupDismissedOfferIds.includes(o.id));
-      if (notDismissed.length > 0) {
-        res.locals.popupOffer = notDismissed[0];
-      } else {
-        res.locals.popupOffer = null;
-      }
+      res.locals.popupOffer = notDismissed.length > 0 ? notDismissed[0] : null;
     } else {
       res.locals.popupOffer = null;
     }

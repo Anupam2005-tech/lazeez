@@ -1,12 +1,13 @@
 const { PrismaClient } = require('@prisma/client');
 
-// Prisma client singleton for development
+// Prisma client singleton — cached globally to survive serverless warm starts
 const globalForPrisma = global;
 
 const db = globalForPrisma.prisma || new PrismaClient({
-  log: ['info', 'warn', 'error'],
+  log: process.env.NODE_ENV === 'production' ? ['warn', 'error'] : ['info', 'warn', 'error'],
 });
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db;
+// Cache in ALL environments (critical for serverless warm starts)
+globalForPrisma.prisma = db;
 
 module.exports = db;
