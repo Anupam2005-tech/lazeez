@@ -9,6 +9,7 @@
   var failCount = 0;
 
   function connect() {
+    if (!window.RestoUser) return;
     if (evtSource) {
       evtSource.close();
     }

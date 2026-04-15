@@ -11,22 +11,8 @@ async function index(req, res) {
     const categories = await appCache.getCategories();
     let allMenuItems = await appCache.getMenuItems();
 
-    // Compute average rating per menu item from feedback
-    const allFeedback = await db.feedback.findMany({
-      include: { order: { include: { items: { select: { menuItemId: true } } } } }
-    });
-    const ratingMap = {};
-    allFeedback.forEach(fb => {
-      fb.order.items.forEach(oi => {
-        if (!ratingMap[oi.menuItemId]) ratingMap[oi.menuItemId] = { sum: 0, count: 0 };
-        ratingMap[oi.menuItemId].sum += fb.foodRating;
-        ratingMap[oi.menuItemId].count += 1;
-      });
-    });
-    const itemRatings = {};
-    for (const [id, data] of Object.entries(ratingMap)) {
-      itemRatings[id] = parseFloat((data.sum / data.count).toFixed(1));
-    }
+    // Get cached item ratings (no DB query)
+    const itemRatings = await appCache.getItemRatings();
 
     // Serialize all items for client-side filtering (include ratings)
     const allItemsJSON = JSON.stringify(allMenuItems.map(item => ({
@@ -129,22 +115,8 @@ async function categoryPage(req, res) {
     else if (foodType === 'nonveg') menuItems = menuItems.filter(i => !i.isVeg);
     else if (foodType === 'bestseller') menuItems = menuItems.filter(i => i.isBestSeller);
 
-    // Compute average rating per menu item
-    const allFeedback = await db.feedback.findMany({
-      include: { order: { include: { items: { select: { menuItemId: true } } } } }
-    });
-    const ratingMap = {};
-    allFeedback.forEach(fb => {
-      fb.order.items.forEach(oi => {
-        if (!ratingMap[oi.menuItemId]) ratingMap[oi.menuItemId] = { sum: 0, count: 0 };
-        ratingMap[oi.menuItemId].sum += fb.foodRating;
-        ratingMap[oi.menuItemId].count += 1;
-      });
-    });
-    const itemRatings = {};
-    for (const [id, data] of Object.entries(ratingMap)) {
-      itemRatings[id] = parseFloat((data.sum / data.count).toFixed(1));
-    }
+    // Get cached item ratings (no DB query)
+    const itemRatings = await appCache.getItemRatings();
 
     const siteUrl = process.env.SITE_URL || 'https://lazeez.com';
     const catDescription = 'Order ' + category.name + ' online from Lazeez. ' + menuItems.length + ' dishes available. Fresh ingredients, authentic recipes, and fast delivery.';
@@ -316,30 +288,16 @@ async function apiMenuItems(req, res) {
     else if (foodType === 'nonveg') items = items.filter(i => !i.isVeg);
     else if (foodType === 'bestseller') items = items.filter(i => i.isBestSeller);
 
-    // Compute average rating per menu item from feedback
-    const allFeedback = await db.feedback.findMany({
-      include: { order: { include: { items: { select: { menuItemId: true } } } } }
-    });
-    const ratingMap = {};
-    allFeedback.forEach(fb => {
-      fb.order.items.forEach(oi => {
-        if (!ratingMap[oi.menuItemId]) ratingMap[oi.menuItemId] = { sum: 0, count: 0 };
-        ratingMap[oi.menuItemId].sum += fb.foodRating;
-        ratingMap[oi.menuItemId].count += 1;
-      });
-    });
+    // Get cached item ratings (no DB query)
+    const cachedRatings = await appCache.getItemRatings();
 
-    const result = items.map(item => {
-      const ratingData = ratingMap[item.id];
-      const avgRating = ratingData ? parseFloat((ratingData.sum / ratingData.count).toFixed(1)) : 0;
-      return {
-        id: item.id, uid: item.uid, name: item.name, price: item.price,
-        image: item.image, description: item.description, isVeg: item.isVeg,
-        isBestSeller: item.isBestSeller, available: item.available,
-        categoryId: item.categoryId, categoryName: item.category ? item.category.name : null,
-        avgRating
-      };
-    });
+    const result = items.map(item => ({
+      id: item.id, uid: item.uid, name: item.name, price: item.price,
+      image: item.image, description: item.description, isVeg: item.isVeg,
+      isBestSeller: item.isBestSeller, available: item.available,
+      categoryId: item.categoryId, categoryName: item.category ? item.category.name : null,
+      avgRating: cachedRatings[item.id] || 0
+    }));
 
     res.json(result);
   } catch (err) {

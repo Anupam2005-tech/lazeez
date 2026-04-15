@@ -8,6 +8,10 @@
   ],
   "routes": [
     {
+      "src": "/__/auth/(.*)",
+      "dest": "https://restro-dd30a.firebaseapp.com/__/auth/$1"
+    },
+    {
       "src": "/css/(.*)",
       "dest": "/public/css/$1"
     },

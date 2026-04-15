@@ -1,117 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+<meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
   <meta name="google-site-verification" content="EihdnrkL-Tir3C88gbRDO2yMv4yLs7_rPnNEzjW-hSI" />
-  <title><%= typeof title !== 'undefined' ? title + ' | Order Food Online' : 'Order Food Online | Lazeez' %></title>
 
   <%
-    var _siteUrl = process.env.SITE_URL || 'https://lazeez.com';
+    // 1. Dynamic Site URL Logic
+    // This ensures Google doesn't think the site is a 'duplicate' of lazeez.com
+    var _protocol = req.protocol;
+    var _host = req.get('host');
+    var _siteUrl = process.env.SITE_URL || (_protocol + '://' + _host);
+
+    // 2. SEO Variables
+    var _title = typeof title !== 'undefined' ? title : 'Order Food Online';
+    var _fullTitle = _title + ' | Lazeez';
     var _canonicalUrl = typeof canonicalUrl !== 'undefined' && canonicalUrl ? _siteUrl + canonicalUrl : _siteUrl + req.path;
-    var _metaDescription = typeof metaDescription !== 'undefined' && metaDescription ? metaDescription : 'Order delicious food online from Lazeez. Fresh ingredients, authentic recipes, and fast delivery. Browse our full menu and order now!';
+    var _metaDescription = typeof metaDescription !== 'undefined' && metaDescription ? metaDescription : 'Order delicious food online from Lazeez. Fresh ingredients, authentic recipes, and fast delivery.';
     var _ogImage = typeof ogImage !== 'undefined' && ogImage ? ogImage : (_siteUrl + '/images/og-default.jpg');
     var _ogType = typeof ogType !== 'undefined' && ogType ? ogType : 'website';
     var _robots = typeof robots !== 'undefined' && robots ? robots : 'index, follow';
   %>
 
+  <title><%= _fullTitle %></title>
+  <meta name="title" content="<%= _fullTitle %>">
   <meta name="description" content="<%= _metaDescription %>">
-  <meta name="keywords" content="order food online, food delivery, restaurant, Lazeez, online ordering, takeaway, dine in">
+  <meta name="keywords" content="order food online, food delivery, restaurant, Lazeez, Agartala food">
   <meta name="author" content="Lazeez">
   <meta name="robots" content="<%= _robots %>">
+  <link rel="canonical" href="<%= _canonicalUrl %>">
+
   <meta name="theme-color" content="#fc8019">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Lazeez">
-  <link rel="canonical" href="<%= _canonicalUrl %>">
 
-  <!-- Google Analytics -->
-  <% if (typeof googleAnalyticsId !== 'undefined' && googleAnalyticsId) { %>
-  <script async src="https://www.googletagmanager.com/gtag/js?id=<%= googleAnalyticsId %>"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', '<%= googleAnalyticsId %>');
-  </script>
-  <% } %>
-
-  <meta property="og:locale" content="en_US">
   <meta property="og:type" content="<%= _ogType %>">
-  <meta property="og:title" content="<%= typeof title !== 'undefined' ? title + ' | Order Food Online' : 'Order Food Online | Lazeez' %>">
-  <meta property="og:description" content="<%= _metaDescription %>">
   <meta property="og:url" content="<%= _canonicalUrl %>">
-  <meta property="og:site_name" content="Lazeez">
+  <meta property="og:title" content="<%= _fullTitle %>">
+  <meta property="og:description" content="<%= _metaDescription %>">
   <meta property="og:image" content="<%= _ogImage %>">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Lazeez - Order Food Online">
+  <meta property="og:site_name" content="Lazeez">
+  <meta property="og:locale" content="en_US">
 
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="<%= typeof title !== 'undefined' ? title + ' | Order Food Online' : 'Order Food Online | Lazeez' %>">
+  <meta name="twitter:url" content="<%= _canonicalUrl %>">
+  <meta name="twitter:title" content="<%= _fullTitle %>">
   <meta name="twitter:description" content="<%= _metaDescription %>">
   <meta name="twitter:image" content="<%= _ogImage %>">
 
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="icon" type="image/x-icon" href="/favicon.svg">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.svg">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.svg">
-  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon-192x192.png">
   <link rel="manifest" href="/site.webmanifest">
-
   <% if (typeof structuredData !== 'undefined' && structuredData) { %>
   <script type="application/ld+json"><%- JSON.stringify(structuredData) %></script>
   <% } %>
   
-  <!-- Tailwind CSS via CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Firebase SDK -->
-  <script src="/js/firebase-app-compat.js"></script>
-  <script src="/js/firebase-auth-compat.js"></script>
-  <script>
-    window.FIREBASE_CONFIG = {
-      apiKey: "<%= firebaseApiKey %>",
-      authDomain: "<%= firebaseAuthDomain %>",
-      projectId: "<%= firebaseProjectId %>",
-      storageBucket: "<%= firebaseStorageBucket %>",
-      messagingSenderId: "<%= firebaseMessagingSenderId %>",
-      appId: "<%= firebaseAppId %>"
-    };
+  <!-- Tailwind CSS (pre-built) -->
+  <link rel="stylesheet" href="/css/tailwind.css">
+  <!-- Firebase SDK (async so page renders first) -->
+  <script src="/js/firebase-app-compat.js" async></script>
+  <script src="/js/firebase-auth-compat.js" async></script>
+  <script id="resto-init-data" type="application/json">
+    <%- JSON.stringify({
+      firebaseConfig: {
+        apiKey: firebaseApiKey,
+        authDomain: firebaseAuthDomain,
+        projectId: firebaseProjectId,
+        storageBucket: firebaseStorageBucket,
+        messagingSenderId: firebaseMessagingSenderId,
+        appId: firebaseAppId
+      },
+      user: user || null,
+      recaptcha: {
+        siteKey: recaptchaSiteKey,
+        v2SiteKey: recaptchaV2SiteKey
+      }
+    }) %>
   </script>
-  <script src="/js/firebase-client.js"></script>
-  <!-- Leaflet CSS & JS (OpenStreetMap) -->
+  <script>
+    (function() {
+      const data = JSON.parse(document.getElementById('resto-init-data').textContent);
+      window.FIREBASE_CONFIG = data.firebaseConfig;
+      window.RestoUser = data.user;
+      window.RECAPTCHA_SITE_KEY = data.recaptcha.siteKey;
+      window.RECAPTCHA_V2_SITE_KEY = data.recaptcha.v2SiteKey;
+      
+      if (typeof tailwind !== 'undefined') {
+        tailwind.config = {
+          theme: {
+            extend: {
+              colors: {
+                orange: { 500: '#fc8019', 600: '#e57317' },
+                green: { 600: '#1ba672' }
+              },
+              fontFamily: { sans: ['Inter', 'sans-serif'] }
+            }
+          }
+        };
+      }
+    })();
+  </script>
+
+  <script src="/js/firebase-client.js" defer></script>
+  
+  <!-- Leaflet CSS & JS (OpenStreetMap - deferred for faster first paint) -->
   <link rel="stylesheet" href="/css/leaflet.css" crossorigin="" />
-  <script src="/js/leaflet.js" crossorigin=""></script>
+  <script src="/js/leaflet.js" crossorigin="" defer></script>
+
   <!-- Google reCAPTCHA v3 -->
-  <script>
-    window.RECAPTCHA_SITE_KEY = '<%= recaptchaSiteKey %>';
-    window.RECAPTCHA_V2_SITE_KEY = '<%= recaptchaV2SiteKey %>';
-  </script>
   <% if (typeof recaptchaSiteKey !== 'undefined' && recaptchaSiteKey) { %>
   <script src="https://www.google.com/recaptcha/api.js?render=<%= recaptchaSiteKey %>" async defer></script>
   <% } %>
-  <!-- Tailwind Config to allow custom color -->
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            orange: {
-              500: '#fc8019',
-              600: '#e57317',
-            },
-            green: {
-              600: '#1ba672'
-            }
-          },
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-          }
-        }
-      }
-    }
-  </script>
   
   <!-- Alpine JS for interactions -->
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -119,6 +121,7 @@
     [x-cloak] { display: none !important; }
     .carousel-track::-webkit-scrollbar { display: none; }
     .carousel-track { -ms-overflow-style: none; scrollbar-width: none; }
+    .grecaptcha-badge { display: none !important; }
   </style>
   
   <!-- Cart state from server session -->
@@ -137,24 +140,161 @@
   <!-- Real-time events (SSE) -->
   <script defer src="/js/realtime.js"></script>
 
+  <!-- Critical CSS preload -->
+  <style>
+    .page-skeleton-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: #fff;
+      z-index: 9999;
+      overflow-y: auto;
+    }
+    .page-skeleton-overlay .sk-nav {
+      height: 72px;
+      background: #fff;
+      border-bottom: 1px solid #f1f1f6;
+    }
+    .page-skeleton-overlay .sk-hero {
+      padding: 40px 24px 0;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .page-skeleton-overlay .sk-cat-track {
+      display: flex;
+      gap: 24px;
+      padding: 12px 0 16px;
+    }
+    .page-skeleton-overlay .sk-cat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .page-skeleton-overlay .sk-cat-circle {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: #f0f0f5;
+    }
+    .page-skeleton-overlay .sk-cat-line {
+      height: 12px;
+      width: 60px;
+      border-radius: 6px;
+      background: #f0f0f5;
+    }
+    .page-skeleton-overlay .sk-filters {
+      display: flex;
+      gap: 10px;
+      padding: 0 24px 32px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .page-skeleton-overlay .sk-filter-btn {
+      height: 34px;
+      width: 70px;
+      border-radius: 20px;
+      background: #f0f0f5;
+    }
+    .page-skeleton-overlay .sk-section-title {
+      height: 28px;
+      width: 240px;
+      border-radius: 8px;
+      background: #f0f0f5;
+      margin: 0 24px 32px;
+      max-width: 1200px;
+    }
+    .page-skeleton-overlay .sk-grid {
+      padding: 0 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 32px;
+    }
+    @media (max-width: 1024px) {
+      .page-skeleton-overlay .sk-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .page-skeleton-overlay .sk-grid { grid-template-columns: 1fr; }
+    }
+    .page-skeleton-overlay .sk-card-img {
+      width: 100%;
+      aspect-ratio: 4/3;
+      border-radius: 16px;
+      background: #f0f0f5;
+      margin-bottom: 12px;
+    }
+    .page-skeleton-overlay .sk-card-line {
+      height: 14px;
+      border-radius: 6px;
+      background: #f0f0f5;
+      margin-bottom: 8px;
+    }
+    .page-skeleton-overlay .sk-card-line.short { width: 65%; }
+    .page-skeleton-overlay .sk-card-line.medium { width: 80%; }
+    .page-skeleton-overlay .sk-card-line.full { width: 100%; }
+    .page-skeleton-overlay .sk-card-badge {
+      height: 22px;
+      width: 70px;
+      border-radius: 20px;
+      background: #f0f0f5;
+      margin-bottom: 8px;
+    }
+    @keyframes sk-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .page-skeleton-overlay .sk-nav,
+    .page-skeleton-overlay .sk-cat-circle,
+    .page-skeleton-overlay .sk-cat-line,
+    .page-skeleton-overlay .sk-filter-btn,
+    .page-skeleton-overlay .sk-section-title,
+    .page-skeleton-overlay .sk-card-img,
+    .page-skeleton-overlay .sk-card-line,
+    .page-skeleton-overlay .sk-card-badge {
+      animation: sk-pulse 1.5s ease-in-out infinite;
+    }
+    .page-skeleton-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+  </style>
+
   <!-- Custom Styles (Swiggy Clone) -->
   <link rel="stylesheet" href="/css/premium.css">
+
+  <!-- Service Worker + PWA Install -->
+  <script>
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js').catch(function() {});
+      });
+    }
+    // Capture install prompt for footer banner
+    window.__pwaInstallPrompt = null;
+    window.__pwaInstalled = false;
+    window.addEventListener('beforeinstallprompt', function(e) {
+      // Prevent browser from showing the default bottom bar
+      e.preventDefault();
+      // Store event for later use
+      window.__pwaInstallPrompt = e;
+      // Dispatch a signal for the footer to pick up
+      window.dispatchEvent(new CustomEvent('pwa-prompt-ready'));
+    });
+    window.addEventListener('appinstalled', function() {
+      window.__pwaInstalled = true;
+      window.__pwaInstallPrompt = null;
+      window.dispatchEvent(new CustomEvent('pwa-installed'));
+      console.log('Lazeez app successfully installed');
+    });
+  </script>
 </head>
 <body class="flex flex-col min-h-screen text-gray-800 antialiased selection:bg-orange-500 selection:text-white bg-white">
   
   <script>
-    // Global loader controls
-    window.RestoLoader = {
-      show: function() { },
-      hide: function() { }
-    };
-
-
-    (function() {
-      // Removed global loader logic
-    })();
-
-
     // Global UI Helper for button loading
     window.RestoUI = {
       setLoading: function(btn, isLoading) {
@@ -176,6 +316,50 @@
   </script>
 
   <!-- Included Navbar -->
+  <!-- Page skeleton overlay — mirrors actual page layout -->
+  <div id="page-skeleton-overlay" class="page-skeleton-overlay">
+    <!-- Navbar skeleton -->
+    <div class="sk-nav"></div>
+    <div class="sk-hero">
+      <!-- Category carousel skeleton -->
+      <div class="sk-cat-track">
+        <div class="sk-cat"><div class="sk-cat-circle"></div><div class="sk-cat-line"></div></div>
+        <div class="sk-cat"><div class="sk-cat-circle"></div><div class="sk-cat-line"></div></div>
+        <div class="sk-cat"><div class="sk-cat-circle"></div><div class="sk-cat-line"></div></div>
+        <div class="sk-cat"><div class="sk-cat-circle"></div><div class="sk-cat-line"></div></div>
+        <div class="sk-cat"><div class="sk-cat-circle"></div><div class="sk-cat-line"></div></div>
+        <div class="sk-cat"><div class="sk-cat-circle"></div><div class="sk-cat-line"></div></div>
+      </div>
+    </div>
+    <!-- Filter buttons skeleton -->
+    <div class="sk-filters">
+      <div class="sk-filter-btn"></div>
+      <div class="sk-filter-btn"></div>
+      <div class="sk-filter-btn"></div>
+    </div>
+    <!-- Section title skeleton -->
+    <div class="sk-section-title"></div>
+    <!-- Items grid skeleton -->
+    <div class="sk-grid">
+      <div><div class="sk-card-img"></div><div class="sk-card-badge"></div><div class="sk-card-line short"></div><div class="sk-card-line full"></div><div class="sk-card-line medium"></div></div>
+      <div><div class="sk-card-img"></div><div class="sk-card-badge"></div><div class="sk-card-line short"></div><div class="sk-card-line full"></div><div class="sk-card-line medium"></div></div>
+      <div><div class="sk-card-img"></div><div class="sk-card-badge"></div><div class="sk-card-line short"></div><div class="sk-card-line full"></div><div class="sk-card-line medium"></div></div>
+      <div><div class="sk-card-img"></div><div class="sk-card-badge"></div><div class="sk-card-line short"></div><div class="sk-card-line full"></div><div class="sk-card-line medium"></div></div>
+      <div><div class="sk-card-img"></div><div class="sk-card-badge"></div><div class="sk-card-line short"></div><div class="sk-card-line full"></div><div class="sk-card-line medium"></div></div>
+      <div><div class="sk-card-img"></div><div class="sk-card-badge"></div><div class="sk-card-line short"></div><div class="sk-card-line full"></div><div class="sk-card-line medium"></div></div>
+      <div><div class="sk-card-img"></div><div class="sk-card-badge"></div><div class="sk-card-line short"></div><div class="sk-card-line full"></div><div class="sk-card-line medium"></div></div>
+      <div><div class="sk-card-img"></div><div class="sk-card-badge"></div><div class="sk-card-line short"></div><div class="sk-card-line full"></div><div class="sk-card-line medium"></div></div>
+    </div>
+  </div>
+  <script>
+    window.addEventListener('load', function() {
+      var overlay = document.getElementById('page-skeleton-overlay');
+      if (overlay) {
+        overlay.classList.add('hidden');
+        setTimeout(function() { overlay.remove(); }, 400);
+      }
+    });
+  </script>
   <%- include('navbar') %>
   <%- include('skeleton') %>
   <!-- Global Confirm Modal -->

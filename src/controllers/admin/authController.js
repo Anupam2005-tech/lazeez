@@ -29,12 +29,12 @@ async function verifyToken(req, res) {
 
     let email, uid;
 
-    if (admin.apps.length > 0) {
-      const decoded = await admin.auth().verifyIdToken(idToken);
+    try {
+      const decoded = await admin.auth.verifyIdToken(idToken);
       uid = decoded.uid;
       email = decoded.email;
-    } else {
-      return res.status(500).json({ error: 'Firebase Admin not configured' });
+    } catch (e) {
+      return res.status(500).json({ error: 'Firebase Admin not configured or token invalid' });
     }
 
     let user = await db.user.findUnique({ where: { firebaseUid: uid } });

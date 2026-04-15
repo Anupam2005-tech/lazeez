@@ -5,9 +5,11 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
-    "dev": "nodemon index.js",
-    "build": "prisma generate"
+    "start": "npm run css && node index.js",
+    "dev": "npm run css && nodemon index.js",
+    "build": "prisma generate",
+    "css": "npx tailwindcss -i ./src/views/partials/tailwind-input.css -o ./public/css/tailwind.css --minify",
+    "css:watch": "npx tailwindcss -i ./src/views/partials/tailwind-input.css -o ./public/css/tailwind.css --watch"
   },
   "keywords": [],
   "author": "",
@@ -27,14 +29,12 @@
     "dotenv": "^17.3.1",
     "ejs": "^5.0.1",
     "express": "^5.2.1",
-    "express-ejs-layouts": "^2.5.1",
     "express-rate-limit": "^8.3.1",
     "express-session": "^1.19.0",
     "firebase": "^12.11.0",
     "firebase-admin": "^13.7.0",
     "leaflet": "^1.9.4",
     "multer": "^2.1.1",
-    "ngeohash": "^0.6.3",
     "node-cache": "^5.1.2",
     "resend": "^6.10.0",
     "sharp": "^0.34.5",
@@ -42,6 +42,7 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.14",
-    "prisma": "^5.22.0"
+    "prisma": "^5.22.0",
+    "tailwindcss": "^3.4.19"
   }
 }

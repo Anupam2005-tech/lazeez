@@ -59,7 +59,7 @@ async function handleGoogleLogin(endpoint = '/auth/verify-token') {
 
   try {
     const provider = new firebase.auth.GoogleAuthProvider();
-    // Use full-page redirect instead of popup for better mobile compatibility
+    // Use redirect for better compatibility on mobile devices
     await auth.signInWithRedirect(provider);
   } catch (err) {
     console.error(err);

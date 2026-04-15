@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url><loc>https://lazeez.com/</loc><lastmod>2026-04-15T10:01:11.529Z</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>
+  <url><loc>https://lazeez.com/menu</loc><lastmod>2026-04-15T10:01:11.529Z</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://lazeez.com/offers</loc><lastmod>2026-04-15T10:01:11.529Z</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://lazeez.com/terms</loc><lastmod>2026-04-15T10:01:11.529Z</lastmod><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://lazeez.com/privacy</loc><lastmod>2026-04-15T10:01:11.529Z</lastmod><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://lazeez.com/category/01e89448-3747-4b44-8cc8-88136d44dc56</loc><lastmod>2026-04-15T10:01:11.529Z</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://lazeez.com/category/ffc33468-f6ca-4c7e-92d9-8f9dc5d04963</loc><lastmod>2026-04-15T10:01:11.529Z</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://lazeez.com/category/8a935183-9cf7-4f6a-a446-c475abda3dbd</loc><lastmod>2026-04-15T10:01:11.529Z</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://lazeez.com/category/9884d51f-75e5-46c6-95e5-74ff80dc1d60</loc><lastmod>2026-04-15T10:01:11.529Z</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://lazeez.com/category/b3684ef2-d06b-4b93-bb69-2644eda4469f</loc><lastmod>2026-04-15T10:01:11.529Z</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url>
+    <loc>https://lazeez.com/item/531435</loc>
+    <lastmod>2026-04-15T10:01:11.529Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://lazeez.com/uploads/dishes/butter-chicken.avif</image:loc>
+      <image:title>Butter Chicken</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://lazeez.com/item/596716</loc>
+    <lastmod>2026-04-15T10:01:11.529Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://lazeez.com/uploads/dishes/chicken-biryani.avif</image:loc>
+      <image:title>Chicken Biryani</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://lazeez.com/item/446533</loc>
+    <lastmod>2026-04-15T10:01:11.529Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://lazeez.com/uploads/dishes/chicken-tikka.avif</image:loc>
+      <image:title>Chicken Tikka</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://lazeez.com/item/533455</loc>
+    <lastmod>2026-04-15T10:01:11.529Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://lazeez.com/uploads/dishes/chocolate-cake.avif</image:loc>
+      <image:title>Chocolate Truffle Cake</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://lazeez.com/item/764535</loc>
+    <lastmod>2026-04-15T10:01:11.529Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://lazeez.com/uploads/dishes/cold-coffee.avif</image:loc>
+      <image:title>Cold Coffee</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://lazeez.com/item/151634</loc>
+    <lastmod>2026-04-15T10:01:11.529Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://lazeez.com/uploads/dishes/dal-makhani.avif</image:loc>
+      <image:title>Dal Makhani</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://lazeez.com/item/222738</loc>
+    <lastmod>2026-04-15T10:01:11.529Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://lazeez.com/uploads/dishes/fresh-lime-soda.avif</image:loc>
+      <image:title>Fresh Lime Soda</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://lazeez.com/item/500595</loc>
+    <lastmod>2026-04-15T10:01:11.529Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://lazeez.com/uploads/dishes/gulab-jamun.avif</image:loc>
+      <image:title>Gulab Jamun (3 pcs)</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://lazeez.com/item/169490</loc>
+    <lastmod>2026-04-15T10:01:11.529Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://lazeez.com/uploads/dishes/mango-lassi.avif</image:loc>
+      <image:title>Mango Lassi</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://lazeez.com/item/406540</loc>
+    <lastmod>2026-04-15T10:01:11.529Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://lazeez.com/uploads/dishes/masala-dosa.avif</image:loc>
+      <image:title>Masala Dosa</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://lazeez.com/item/640712</loc>
+    <lastmod>2026-04-15T10:01:11.529Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://lazeez.com/uploads/dishes/mutton-biryani.avif</image:loc>
+      <image:title>Mutton Biryani</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://lazeez.com/item/545858</loc>
+    <lastmod>2026-04-15T10:01:11.529Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://lazeez.com/uploads/dishes/naan-bread.avif</image:loc>
+      <image:title>Naan (2 pcs)</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://lazeez.com/item/927935</loc>
+    <lastmod>2026-04-15T10:01:11.529Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://lazeez.com/uploads/dishes/paneer-butter-masala.avif</image:loc>
+      <image:title>Paneer Butter Masala</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://lazeez.com/item/704982</loc>
+    <lastmod>2026-04-15T10:01:11.529Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://lazeez.com/uploads/dishes/paneer-tikka.avif</image:loc>
+      <image:title>Paneer Tikka</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://lazeez.com/item/897026</loc>
+    <lastmod>2026-04-15T10:01:11.529Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://lazeez.com/uploads/dishes/samosa.avif</image:loc>
+      <image:title>Samosa (2 pcs)</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://lazeez.com/item/662234</loc>
+    <lastmod>2026-04-15T10:01:11.529Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://lazeez.com/uploads/dishes/ice-cream.avif</image:loc>
+      <image:title>Vanilla Ice Cream</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://lazeez.com/item/986346</loc>
+    <lastmod>2026-04-15T10:01:11.529Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://lazeez.com/uploads/dishes/veg-fried-rice.avif</image:loc>
+      <image:title>Veg Fried Rice</image:title>
+    </image:image>
+  </url>
+</urlset>

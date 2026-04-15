@@ -28,7 +28,12 @@
   <!-- Order Status Card -->
   <div class="bg-white rounded-2xl shadow-sm border border-[#e9e9eb] p-5 mb-4">
     <div class="flex items-center justify-between mb-4">
-      <h1 class="text-xl font-bold text-[#282c3f]">Order #<%= order.id %></h1>
+      <div>
+        <h1 class="text-xl font-bold text-[#282c3f]">
+          <%= order.items.map(i => i.menuItem ? i.menuItem.name : 'Item').join(', ') %>
+        </h1>
+        <p class="text-[11px] font-bold text-[#93959f] uppercase tracking-wide">Order #<%= order.id.split('-')[0] %></p>
+      </div>
       <div class="flex items-center gap-2">
         <span class="text-xs font-bold <%= statusColor %> px-3 py-1 rounded-full flex items-center gap-1.5">
           <span class="w-1.5 h-1.5 rounded-full <%= statusDot %>"></span>

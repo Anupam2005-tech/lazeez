@@ -1,31 +1,44 @@
-const admin = require('firebase-admin');
-const dotenv = require('dotenv');
+// Lazy-loaded Firebase Admin SDK
+// Only initializes when first accessed (not on server startup)
 
-dotenv.config();
+let admin = null;
+let initialized = false;
 
-try {
-  if (process.env.FIREBASE_PRIVATE_KEY && admin.apps.length === 0) {
-    const rawKey = process.env.FIREBASE_PRIVATE_KEY;
-    // Handle various formatting issues: literal newlines, escaped newlines, and accidental quotes
-    const formattedKey = rawKey
-      .replace(/"/g, '') // remove accidental quotes
-      .replace(/\\n/g, '\n') // handle escaped newlines
-      .trim();
+function getAdmin() {
+  if (initialized) return admin;
 
-    admin.initializeApp({
-      credential: admin.credential.cert({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: formattedKey,
-      }),
-    });
-    console.log('Firebase Admin SDK initialized successfully.');
-  } else if (!process.env.FIREBASE_PRIVATE_KEY) {
-    console.warn('Firebase Admin SDK not fully initialized (missing keys). Dummy mode enabled.');
+  try {
+    const adminModule = require('firebase-admin');
+    if (process.env.FIREBASE_PRIVATE_KEY && !adminModule.apps.length) {
+      const rawKey = process.env.FIREBASE_PRIVATE_KEY;
+      const formattedKey = rawKey
+        .replace(/"/g, '')
+        .replace(/\\n/g, '\n')
+        .trim();
+
+      adminModule.initializeApp({
+        credential: adminModule.credential.cert({
+          projectId: process.env.FIREBASE_PROJECT_ID,
+          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+          privateKey: formattedKey,
+        }),
+      });
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('Firebase Admin SDK initialized.');
+      }
+    }
+    admin = adminModule;
+    initialized = true;
+  } catch (error) {
+    console.error('Firebase Admin INIT error:', error.message);
+    initialized = true;
   }
-} catch (error) {
-  console.error('Firebase Admin INIT error:', error.message);
-  // We don't throw here to allow the server to start, but subsequent calls will fail if keys were intended
+
+  return admin;
 }
 
-module.exports = admin;
+// Block direct module.exports access — force using getAdmin()
+module.exports = {
+  get auth() { return getAdmin()?.auth(); },
+  get firestore() { return getAdmin()?.firestore(); },
+};

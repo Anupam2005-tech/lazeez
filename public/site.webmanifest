@@ -1,15 +1,25 @@
 {
-  "name": "Lazeez - Premium Restaurant Management System",
+  "name": "Lazeez - Let's spice it up",
   "short_name": "Lazeez",
+  "description": "Order delicious food online. Fresh ingredients, authentic recipes, and fast delivery.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#fc8019",
+  "orientation": "portrait-primary",
+  "categories": ["food", "shopping"],
   "icons": [
     {
       "src": "/favicon.svg",
       "sizes": "any",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }

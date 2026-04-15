@@ -35,73 +35,10 @@ router.get('/privacy', (req, res) => {
 
 router.get('/sitemap.xml', async (req, res) => {
   try {
-    const siteUrl = process.env.SITE_URL || 'https://lazeez.com';
-    const now = new Date().toISOString();
-
-    const categories = await appCache.getCategories();
-    const menuItems = await appCache.getMenuItems();
-
-    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
-    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
-
-    xml += '  <url>\n';
-    xml += '    <loc>' + siteUrl + '/</loc>\n';
-    xml += '    <lastmod>' + now + '</lastmod>\n';
-    xml += '    <changefreq>daily</changefreq>\n';
-    xml += '    <priority>1.0</priority>\n';
-    xml += '  </url>\n';
-
-    xml += '  <url>\n';
-    xml += '    <loc>' + siteUrl + '/menu</loc>\n';
-    xml += '    <lastmod>' + now + '</lastmod>\n';
-    xml += '    <changefreq>daily</changefreq>\n';
-    xml += '    <priority>0.9</priority>\n';
-    xml += '  </url>\n';
-
-    xml += '  <url>\n';
-    xml += '    <loc>' + siteUrl + '/offers</loc>\n';
-    xml += '    <lastmod>' + now + '</lastmod>\n';
-    xml += '    <changefreq>weekly</changefreq>\n';
-    xml += '    <priority>0.7</priority>\n';
-    xml += '  </url>\n';
-
-    xml += '  <url>\n';
-    xml += '    <loc>' + siteUrl + '/terms</loc>\n';
-    xml += '    <lastmod>' + now + '</lastmod>\n';
-    xml += '    <changefreq>monthly</changefreq>\n';
-    xml += '    <priority>0.4</priority>\n';
-    xml += '  </url>\n';
-
-    xml += '  <url>\n';
-    xml += '    <loc>' + siteUrl + '/privacy</loc>\n';
-    xml += '    <lastmod>' + now + '</lastmod>\n';
-    xml += '    <changefreq>monthly</changefreq>\n';
-    xml += '    <priority>0.4</priority>\n';
-    xml += '  </url>\n';
-    categories.forEach(function(cat) {
-      xml += '  <url>\n';
-      xml += '    <loc>' + siteUrl + '/category/' + cat.id + '</loc>\n';
-      xml += '    <lastmod>' + now + '</lastmod>\n';
-      xml += '    <changefreq>weekly</changefreq>\n';
-      xml += '    <priority>0.8</priority>\n';
-      xml += '  </url>\n';
-    });
-
-    menuItems.forEach(function(item) {
-      if (item.available) {
-        xml += '  <url>\n';
-        xml += '    <loc>' + siteUrl + '/item/' + item.uid + '</loc>\n';
-        xml += '    <lastmod>' + now + '</lastmod>\n';
-        xml += '    <changefreq>weekly</changefreq>\n';
-        xml += '    <priority>0.7</priority>\n';
-        xml += '  </url>\n';
-      }
-    });
-
-    xml += '</urlset>';
-
+    const sitemap = await appCache.getSitemap();
     res.setHeader('Content-Type', 'application/xml');
-    res.send(xml);
+    res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
+    res.send(sitemap);
   } catch (err) {
     console.error('Sitemap error:', err);
     res.status(500).send('Error generating sitemap');
@@ -110,12 +47,10 @@ router.get('/sitemap.xml', async (req, res) => {
 
 router.get('/api/settings', async (req, res) => {
   try {
-    const settings = await db.setting.findMany();
-    const result = {};
-    settings.forEach(s => { result[s.key] = s.value; });
+    const settings = await appCache.getSettings();
     res.json({
-      deliveryRatePer5km: parseFloat(result.deliveryRatePer5km || '10'),
-      platformFee: parseFloat(result.platformFee || '5')
+      deliveryRatePer5km: parseFloat(settings.deliveryRatePer5km || '10'),
+      platformFee: parseFloat(settings.platformFee || '5')
     });
   } catch (e) {
     res.json({ deliveryRatePer5km: 10, platformFee: 5 });

@@ -324,13 +324,15 @@
                 <% } %>
               </div>
               
-                  <div class="flex items-center gap-1 text-[15px] font-semibold text-[#3d4152] mb-1">
+              <div class="flex items-center gap-1 text-[15px] font-semibold text-[#3d4152] mb-1">
                     <svg class="w-5 h-5 text-white bg-green-600 rounded-full p-0.5" viewBox="0 0 20 20" fill="currentColor">
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                     </svg>
                     <span><%= itemRatings[item.id] || '—' %></span>
+                    <span class="text-gray-500 font-bold mx-1.5">&bull;</span>
+                    <span>₹<%= item.price %></span>
                   </div>
-              
+               
               <div class="text-[14px] text-[#686b78] line-clamp-1 font-medium">
                 <%= item.description || 'Deliciously prepared for you.' %>
               </div>
@@ -473,7 +475,7 @@ function renderItemsGrid(items) {
     var displayClass = index >= 8 ? 'hidden' : '';
     var ratingDisplay = item.avgRating > 0 ? item.avgRating : '&#8212;';
 
-    return '<div class="group menu-item-card ' + displayClass + '" data-index="' + index + '"><div class="relative"><a href="/item/' + item.uid + '" class="block"><div class="relative w-full aspect-[4/3] rounded-[16px] overflow-hidden mb-3 bg-gray-100 shadow-sm cursor-pointer ' + grayscale + '">' + imgHtml + '<div class="absolute inset-0 bg-gradient-to-t from-[#1b1e24]/60 via-transparent to-transparent z-10 w-full h-full pointer-events-none"></div>' + unavailableBadge + bestBadge + '</div></a>' + addBtn + '</div><a href="/item/' + item.uid + '" class="block"><div class="px-1 cursor-pointer"><h3 class="text-[17px] font-bold text-[#3d4152] truncate mb-0.5" title="' + item.name + '">' + item.name + '</h3><div class="flex items-center gap-2 mb-1">' + vegBadge + '</div><div class="flex items-center gap-1 text-[15px] font-semibold text-[#3d4152] mb-1"><svg class="w-5 h-5 text-white bg-green-600 rounded-full p-0.5" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg><span>' + ratingDisplay + '</span></div><div class="text-[14px] text-[#686b78] line-clamp-1 font-medium">' + (item.description || 'Deliciously prepared for you.') + '</div></div></a></div>';
+    return '<div class="group menu-item-card ' + displayClass + '" data-index="' + index + '"><div class="relative"><a href="/item/' + item.uid + '" class="block"><div class="relative w-full aspect-[4/3] rounded-[16px] overflow-hidden mb-3 bg-gray-100 shadow-sm cursor-pointer ' + grayscale + '">' + imgHtml + '<div class="absolute inset-0 bg-gradient-to-t from-[#1b1e24]/60 via-transparent to-transparent z-10 w-full h-full pointer-events-none"></div>' + unavailableBadge + bestBadge + '</div></a>' + addBtn + '</div><a href="/item/' + item.uid + '" class="block"><div class="px-1 cursor-pointer"><h3 class="text-[17px] font-bold text-[#3d4152] truncate mb-0.5" title="' + item.name + '">' + item.name + '</h3><div class="flex items-center gap-2 mb-1">' + vegBadge + '</div><div class="flex items-center gap-1 text-[15px] font-semibold text-[#3d4152] mb-1"><svg class="w-5 h-5 text-white bg-green-600 rounded-full p-0.5" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg><span>' + ratingDisplay + '</span><span class="text-gray-500 font-bold mx-1.5">&bull;</span><span>₹' + item.price + '</span></div><div class="text-[14px] text-[#686b78] line-clamp-1 font-medium">' + (item.description || 'Deliciously prepared for you.') + '</div></div></a></div>';
   }).join('');
 }
 

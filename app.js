@@ -14,15 +14,31 @@ app.set('trust proxy', 1);
 // View engine setup
 app.set('views', path.join(__dirname, 'src', 'views'));
 app.set('view engine', 'ejs');
-const expressLayouts = require('express-ejs-layouts');
-app.use(expressLayouts);
-app.set('layout', false); // no default layout (storefront uses partials)
 
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+
+// Static assets with aggressive caching
+app.use(express.static(path.join(__dirname, 'public'), {
+  maxAge: '1y',
+  etag: true,
+  lastModified: true,
+  setHeaders: (res, filePath) => {
+    // Don't cache HTML files
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      return;
+    }
+    // Cache-bust JS/CSS by using immutable for hashed files
+    if (filePath.match(/\.(js|css)$/) && !filePath.includes('.map')) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    } else {
+      res.setHeader('Cache-Control', 'public, max-age=31536000');
+    }
+  }
+}));
 
 // Session configuration (falls back to default memory store if Redis unavailable)
 const SESSION_MAX_AGE = 30 * 24 * 60 * 60 * 1000; // 30 days
@@ -113,7 +129,7 @@ const store = isProduction ? new UpstashRestStore({
 
 sessionConfig.store = store;
 app.use(session(sessionConfig));
-console.log('Session store initialized');
+if (process.env.NODE_ENV !== 'production') console.log('Session store initialized');
 
 
   // Global template variables

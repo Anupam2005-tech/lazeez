@@ -89,9 +89,14 @@
                         <div class="space-y-3">
                             <% orders.slice(0, 5).forEach(order => { %>
                                 <a href="/admin/orders/<%= order.id %>" data-order-id="<%= order.id %>" class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors border border-gray-100">
-                                    <div class="flex items-center gap-3 min-w-0">
-                                        <span class="text-sm font-bold text-gray-900 shrink-0">#<%= order.id %></span>
-                                        <span class="text-xs sm:text-sm text-gray-500 truncate"><%= order.user?.name || order.user?.email || 'Guest' %></span>
+                                    <div class="flex flex-col min-w-0">
+                                        <span class="text-sm font-bold text-gray-900 truncate">
+                                            <%= order.items.map(i => i.menuItem ? i.menuItem.name : 'Item').join(', ') %>
+                                        </span>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter shrink-0">#<%= order.id.split('-')[0] %></span>
+                                            <span class="text-[11px] text-gray-500 truncate"><%= order.user?.name || order.user?.email || 'Guest' %></span>
+                                        </div>
                                     </div>
                                     <div class="flex items-center gap-3 shrink-0">
                                         <span class="stat-order-amount text-sm font-bold text-gray-900">₹<%= order.totalAmount.toFixed(2) %></span>
@@ -252,9 +257,12 @@
                 a.setAttribute('data-order-id', data.orderId);
                 a.className = 'flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-all border border-green-200 bg-green-50';
                 a.innerHTML = 
-                    '<div class="flex items-center gap-3 min-w-0">' +
-                    '<span class="text-sm font-bold text-gray-900 shrink-0">#' + data.orderId + '</span>' +
-                    '<span class="text-xs sm:text-sm text-gray-500 truncate">' + (data.customerName || 'Guest') + '</span>' +
+                    '<div class="flex flex-col min-w-0">' +
+                    '<span class="text-sm font-bold text-gray-900 truncate">' + (data.itemsSummary || 'Order') + '</span>' +
+                    '<div class="flex items-center gap-2">' +
+                    '<span class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">#' + data.orderId.split('-')[0] + '</span>' +
+                    '<span class="text-[11px] text-gray-500 truncate">' + (data.customerName || 'Guest') + '</span>' +
+                    '</div>' +
                     '</div>' +
                     '<div class="flex items-center gap-3 shrink-0">' +
                     '<span class="stat-order-amount text-sm font-bold text-gray-900">₹' + data.totalAmount.toFixed(2) + '</span>' +

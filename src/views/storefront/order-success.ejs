@@ -19,9 +19,12 @@
     <div class="mb-6"></div>
   <% } %>
 
-  <div class="border border-[#e9e9eb] p-4 text-[14px] text-left w-full max-w-[320px] mb-8 bg-gray-50 flex justify-between items-center shadow-sm">
-    <span class="font-bold text-[#3d4152]">Order #<%= order.id %></span>
-    <span class="text-[#282c3f] font-bold">₹<%= order.totalAmount.toFixed(2) %></span>
+  <div class="border border-[#e9e9eb] p-5 text-[14px] text-left w-full max-w-[340px] mb-8 bg-gray-50 flex flex-col gap-2 shadow-sm rounded-lg">
+    <div class="flex justify-between items-start">
+      <span class="font-bold text-[#3d4152] flex-1 mr-3"><%= itemsSummary %></span>
+      <span class="text-[#282c3f] font-bold shrink-0">₹<%= order.totalAmount.toFixed(2) %></span>
+    </div>
+    <span class="text-[10px] text-[#93959f] font-bold uppercase tracking-tight">Order #<%= order.id.split('-')[0] %></span>
   </div>
 
   <a href="/orders/<%= order.id %>" class="bg-[#fc8019] text-white px-8 py-3.5 font-bold uppercase tracking-wider text-[14px] hover:shadow-md transition-shadow">

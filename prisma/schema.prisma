@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -12,92 +9,92 @@ datasource db {
 }
 
 model User {
-  id          String   @id @default(uuid()) @db.Uuid
-  firebaseUid String   @unique
-  email       String?
-  phone       String?
-  name        String?
-  password    String?                       // bcrypt hash for local auth (offline)
-  role        String   @default("customer") // "customer" | "admin"
-  flatNo      String?                       // flat/house number
-  landmark    String?                       // landmark
-  pincode     String?                       // pincode
-  address     String?                       // full address text
-  lat         Float?                        // latitude
-  lng         Float?                        // longitude
-  createdAt   DateTime @default(now())
-  orders      Order[]
-  feedbacks   Feedback[]
+  id             String         @id @default(uuid()) @db.Uuid
+  firebaseUid    String         @unique
+  email          String?
+  phone          String?
+  name           String?
+  password       String?
+  role           String         @default("customer")
+  flatNo         String?
+  landmark       String?
+  pincode        String?
+  address        String?
+  lat            Float?
+  lng            Float?
+  createdAt      DateTime       @default(now())
+  feedbacks      Feedback[]
+  orders         Order[]
   savedAddresses SavedAddress[]
 }
 
 model Category {
   id        String     @id @default(uuid()) @db.Uuid
   name      String     @unique
-  image     String?    // category image for storefront display
+  image     String?
   menuItems MenuItem[]
 }
 
 model MenuItem {
-  id          String     @id @default(uuid()) @db.Uuid
-  uid         String     @unique
-  name        String
-  description String?
-  price       Float
-  image       String?    // relative path under /public/uploads or base64
-  available   Boolean    @default(true)
-  isVeg       Boolean    @default(true)      // admin-controlled diet flag
-  isBestSeller Boolean   @default(false)     // admin-controlled popularity flag
-  categoryId  String     @db.Uuid
-  category    Category   @relation(fields: [categoryId], references: [id])
-  createdAt   DateTime   @default(now())
-  orderItems  OrderItem[]
+  id           String      @id @default(uuid()) @db.Uuid
+  uid          String      @unique
+  name         String
+  description  String?
+  price        Float
+  image        String?
+  available    Boolean     @default(true)
+  isVeg        Boolean     @default(true)
+  isBestSeller Boolean     @default(false)
+  categoryId   String      @db.Uuid
+  createdAt    DateTime    @default(now())
+  category     Category    @relation(fields: [categoryId], references: [id])
+  orderItems   OrderItem[]
 }
 
 model Order {
-  id           String      @id @default(uuid()) @db.Uuid
-  userId       String      @db.Uuid
-  user         User        @relation(fields: [userId], references: [id])
-  status       String      @default("Pending")  // Pending|Preparing|Ready|Delivered|Cancelled
-  itemTotal    Float       @default(0)    // sum of (unitPrice * quantity) for all items
-  deliveryFee  Float       @default(0)    // distance-based delivery fee
-  platformFee  Float       @default(0)    // platform/service fee
-  totalAmount  Float                      // grand total = itemTotal + deliveryFee + platformFee
-  paymentMethod String     @default("Online")
-  paymentStatus String     @default("Pending")
-  paymentTimestamp        DateTime?
-  address      String?
-  customerName String?
-  customerPhone String?
-  suggestions  String?                      // delivery instructions
-  dineIn       Boolean     @default(false)
-  cancelReason String?
-  refundStatus String?                      // null | "Pending" | "Completed"
-  createdAt    DateTime    @default(now())
-  items        OrderItem[]
-  feedback     Feedback[]
+  id               String      @id @default(uuid()) @db.Uuid
+  userId           String      @db.Uuid
+  status           String      @default("Pending")
+  itemTotal        Float       @default(0)
+  deliveryFee      Float       @default(0)
+  platformFee      Float       @default(0)
+  totalAmount      Float
+  paymentMethod    String      @default("Online")
+  paymentStatus    String      @default("Pending")
+  paymentTimestamp DateTime?
+  address          String?
+  customerName     String?
+  customerPhone    String?
+  suggestions      String?
+  dineIn           Boolean     @default(false)
+  cancelReason     String?
+  refundStatus     String?
+  createdAt        DateTime    @default(now())
+  feedback         Feedback[]
+  user             User        @relation(fields: [userId], references: [id])
+  items            OrderItem[]
 }
 
 model OrderItem {
   id         String   @id @default(uuid()) @db.Uuid
   orderId    String   @db.Uuid
-  order      Order    @relation(fields: [orderId], references: [id])
   menuItemId String   @db.Uuid
-  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
   quantity   Int
   unitPrice  Float
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+  order      Order    @relation(fields: [orderId], references: [id])
 }
 
 model Feedback {
   id          String   @id @default(uuid()) @db.Uuid
   orderId     String   @db.Uuid
-  order       Order    @relation(fields: [orderId], references: [id])
   userId      String   @db.Uuid
-  user        User     @relation(fields: [userId], references: [id])
-  foodRating  Int      // 1-5 stars
-  storeRating Int      // 1-5 stars
+  foodRating  Int
+  storeRating Int
   comment     String?
   createdAt   DateTime @default(now())
+  order       Order    @relation(fields: [orderId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
 
   @@unique([orderId, userId])
 }
@@ -121,8 +118,7 @@ model Setting {
 model SavedAddress {
   id        String   @id @default(uuid()) @db.Uuid
   userId    String   @db.Uuid
-  user      User     @relation(fields: [userId], references: [id])
-  label     String   // e.g., "Home", "Work", "Other"
+  label     String
   flatNo    String?
   address   String
   landmark  String?
@@ -131,4 +127,5 @@ model SavedAddress {
   lng       Float?
   isDefault Boolean  @default(false)
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
 }

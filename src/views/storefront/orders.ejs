@@ -49,12 +49,12 @@
                <span class="text-xs text-[#7e808c]"><%= dateStr %></span>
             </div>
             
-            <!-- Order ID & Items -->
+            <!-- Dish Names as Primary Title -->
             <div class="mb-3">
-              <p class="text-sm font-bold text-[#282c3f] mb-1">Order #<%= order.id %></p>
-              <p class="text-xs text-[#7e808c] line-clamp-2">
-                <%= order.items.map(i => (i.menuItem ? i.menuItem.name : 'Item') + ' x' + i.quantity).join(', ') %>
-              </p>
+              <h3 class="text-sm font-bold text-[#282c3f] mb-1 line-clamp-1">
+                <%= order.items.map(i => i.menuItem ? i.menuItem.name : 'Item').join(', ') %>
+              </h3>
+              <p class="text-[10px] text-[#93959f] font-medium uppercase tracking-tight">Order #<%= order.id.split('-')[0] %></p>
             </div>
             
              <!-- Bottom Row: Action -->
@@ -138,8 +138,8 @@
        + '<span class="text-xs text-[#7e808c]">' + dateStr + '</span>'
        + '</div>'
       + '<div class="mb-3">'
-      + '<p class="text-sm font-bold text-[#282c3f] mb-1">Order #' + order.id + '</p>'
-      + '<p class="text-xs text-[#7e808c] line-clamp-2">' + order.itemsSummary + '</p>'
+      + '<h3 class="text-sm font-bold text-[#282c3f] mb-1 line-clamp-1">' + order.itemsSummary + '</h3>'
+      + '<p class="text-[10px] text-[#93959f] font-medium uppercase tracking-tight">Order #' + order.id.split('-')[0] + '</p>'
       + '</div>'
        + '<div class="flex items-center justify-between pt-3 border-t border-[#e9e9eb]">'
        + '<div></div>'

@@ -147,7 +147,17 @@ async function sendOrderConfirmation(user, order) {
     <p style="margin:24px 0 0;color:#7e808c;font-size:13px;text-align:center;">We'll notify you when your order status changes.</p>
   `);
 
-  return send({ to: user.email, subject: `Order Confirmed — #${order.id.slice(0, 8).toUpperCase()}`, html, from: FROM_ORDERS });
+  const itemsSummary = order.items.map(i => i.menuItem ? i.menuItem.name : 'Item').join(', ');
+  const subjectSummary = order.items.length > 1 
+    ? `${order.items[0].menuItem?.name || 'Item'} + ${order.items.length - 1} more`
+    : (order.items[0]?.menuItem?.name || 'Order');
+
+  return send({ 
+    to: user.email, 
+    subject: `Order Confirmed: ${subjectSummary} — #${order.id.slice(0, 8).toUpperCase()}`, 
+    html, 
+    from: FROM_ORDERS 
+  });
 }
 
 /**
@@ -184,7 +194,17 @@ async function sendOrderStatusUpdate(user, order, newStatus) {
     <p style="margin:0 0 24px;color:#7e808c;font-size:13px;">${newStatus === 'Ready' ? 'Your order is ready! It will be on its way soon.' : 'Your order is being prepared with care.'}</p>
   `);
 
-  return send({ to: user.email, subject: `Order ${newStatus} — #${order.id.slice(0, 8).toUpperCase()}`, html, from: FROM_ORDERS });
+  const itemsSummary = order.items?.map(i => i.menuItem ? i.menuItem.name : 'Item').join(', ') || 'Your Order';
+  const subjectSummary = order.items && order.items.length > 1 
+    ? `${order.items[0].menuItem?.name || 'Item'} + ${order.items.length - 1} more`
+    : (order.items?.[0]?.menuItem?.name || 'Order');
+
+  return send({ 
+    to: user.email, 
+    subject: `Order ${newStatus}: ${subjectSummary} — #${order.id.slice(0, 8).toUpperCase()}`, 
+    html, 
+    from: FROM_ORDERS 
+  });
 }
 
 /**
@@ -219,7 +239,16 @@ async function sendOrderDelivered(user, order) {
     <p style="margin:0;color:#7e808c;font-size:13px;">We'd love to hear your feedback! You can rate your order on the website.</p>
   `);
 
-  return send({ to: user.email, subject: `Order Delivered — #${order.id.slice(0, 8).toUpperCase()}`, html, from: FROM_ORDERS });
+  const subjectSummary = order.items && order.items.length > 1 
+    ? `${order.items[0].menuItem?.name || 'Item'} + ${order.items.length - 1} more`
+    : (order.items?.[0]?.menuItem?.name || 'Order');
+
+  return send({ 
+    to: user.email, 
+    subject: `Order Delivered: ${subjectSummary} — #${order.id.slice(0, 8).toUpperCase()}`, 
+    html, 
+    from: FROM_ORDERS 
+  });
 }
 
 /**
@@ -259,7 +288,16 @@ async function sendOrderCancelled(user, order, cancelReason, cancelledBy) {
     <p style="margin:0;color:#7e808c;font-size:13px;">We're sorry to see this. Feel free to place a new order anytime!</p>
   `);
 
-  return send({ to: user.email, subject: `Order Cancelled — #${order.id.slice(0, 8).toUpperCase()}`, html, from: FROM_SUPPORT });
+  const subjectSummary = order.items && order.items.length > 1 
+    ? `${order.items[0].menuItem?.name || 'Item'} + ${order.items.length - 1} more`
+    : (order.items?.[0]?.menuItem?.name || 'Order');
+
+  return send({ 
+    to: user.email, 
+    subject: `Order Cancelled: ${subjectSummary} — #${order.id.slice(0, 8).toUpperCase()}`, 
+    html, 
+    from: FROM_SUPPORT 
+  });
 }
 
 /**
@@ -325,7 +363,16 @@ async function sendAdminOrderCancelled(adminEmail, order, user) {
     </div>
   `);
 
-  return send({ to: adminEmail, subject: `Customer Cancelled Order — #${order.id.slice(0, 8).toUpperCase()}`, html, from: FROM_SUPPORT });
+  const subjectSummary = order.items && order.items.length > 1 
+    ? `${order.items[0].menuItem?.name || 'Item'} + ${order.items.length - 1} more`
+    : (order.items?.[0]?.menuItem?.name || 'Order');
+
+  return send({ 
+    to: adminEmail, 
+    subject: `ALERT: Order Cancelled — ${subjectSummary} (#${order.id.slice(0, 8).toUpperCase()})`, 
+    html, 
+    from: FROM_SUPPORT 
+  });
 }
 
 /**

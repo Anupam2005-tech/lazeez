@@ -5,8 +5,6 @@ const emailService = require('../services/email');
 const RESTAURANT_LAT = parseFloat(process.env.RESTAURANT_LAT) || 23.5492425;
 const RESTAURANT_LNG = parseFloat(process.env.RESTAURANT_LNG) || 91.4668604;
 
-const geohash = require('ngeohash');
-
 // Precise Haversine distance calculation
 function getDistance(lat1, lon1, lat2, lon2) {
   const R = 6371; // Radius of Earth in km
@@ -169,7 +167,8 @@ async function createCheckoutSession(req, res) {
       }
     });
 
-    // Send realtime event
+    // Send realtime event with dish names
+    const itemsSummary = cart.map(item => item.name + ' x' + item.quantity).join(', ');
     realtime.broadcastOrderEvent('order:new', {
       orderId: order.id,
       userId: order.userId,
@@ -177,7 +176,8 @@ async function createCheckoutSession(req, res) {
       status: order.status,
       customerName: order.customerName,
       dineIn: order.dineIn,
-      createdAt: order.createdAt
+      createdAt: order.createdAt,
+      itemsSummary
     });
 
     // Clear cart
@@ -208,9 +208,17 @@ async function createCheckoutSession(req, res) {
 async function orderSuccess(req, res) {
   const orderId = req.params.id;
   try {
-    const order = await db.order.findUnique({ where: { id: orderId } });
+    const order = await db.order.findUnique({
+      where: { id: orderId },
+      include: { items: { include: { menuItem: true } } }
+    });
     if (!order || order.userId !== req.session.user.id) return res.redirect('/');
-    res.render('storefront/order-success', { title: 'Order Successful', order, robots: 'noindex, nofollow' });
+    res.render('storefront/order-success', {
+      title: 'Order Successful',
+      order,
+      robots: 'noindex, nofollow',
+      itemsSummary: order.items.map(i => i.menuItem ? i.menuItem.name : 'Item').join(', ')
+    });
   } catch (err) {
     res.redirect('/');
   }

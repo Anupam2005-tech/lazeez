@@ -465,6 +465,7 @@
       }
 
       // Save lat/lng, pincode AND address to profile
+      if (!window.RestoUser) return;
       var body = { lat: lat, lng: lng };
       if (pincode) body.pincode = pincode;
       if (address) body.address = address;
@@ -529,8 +530,8 @@
 
   // ===== Auto-initialize on page load =====
   function init() {
-    // Skip auto-init if not on storefront pages
-    if (window.location.pathname.startsWith('/admin')) {
+    // Skip auto-init if not on storefront pages or if user is not logged in
+    if (window.location.pathname.startsWith('/admin') || !window.RestoUser) {
       return;
     }
     

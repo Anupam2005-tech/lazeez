@@ -84,7 +84,7 @@ async function showDashboard(req, res) {
       }),
       db.order.findMany({
         where: orderWhereClause,
-        include: { user: true, items: { include: { menuItem: true } } },
+        include: { user: { select: { name: true, email: true, phone: true } }, items: { include: { menuItem: true } } },
         orderBy: { createdAt: 'desc' }
       }),
       db.menuItem.findMany({
@@ -180,8 +180,14 @@ async function apiOrders(req, res) {
       : orders.map(order => {
           const date = new Date(order.createdAt).toLocaleString();
           const color = statusColors[order.status] || 'bg-gray-100 text-gray-800';
+          const itemsSummary = order.items.map(i => i.menuItem ? i.menuItem.name : 'Item').join(', ');
           return `<tr class="hover:bg-gray-50 cursor-pointer" data-order-id="${order.id}" onclick="window.location.href='/admin/orders/${order.id}'">
-            <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm font-bold text-gray-900">#${order.id}</td>
+            <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+              <div class="flex flex-col">
+                <span class="truncate max-w-[150px] sm:max-w-xs">${itemsSummary}</span>
+                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">#${order.id.split('-')[0]}</span>
+              </div>
+            </td>
             <td class="hidden sm:table-cell px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-500">${date}</td>
             <td class="hidden md:table-cell px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-900">${order.user?.name || order.user?.email || 'Guest'}</td>
             <td class="hidden lg:table-cell px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-500">${order.dineIn ? 'Dine-in' : 'Delivery'}</td>

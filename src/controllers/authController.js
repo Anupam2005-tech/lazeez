@@ -32,14 +32,14 @@ async function verifyToken(req, res) {
 
     let email, phone, uid, name;
 
-    if (admin.apps.length > 0) {
-      const decodedToken = await admin.auth().verifyIdToken(idToken);
+    try {
+      const decodedToken = await admin.auth.verifyIdToken(idToken);
       uid = decodedToken.uid;
       email = decodedToken.email;
       phone = decodedToken.phone_number;
       name = decodedToken.name || null;
-    } else {
-      return res.status(500).json({ error: 'Firebase Admin not configured' });
+    } catch (e) {
+      return res.status(500).json({ error: 'Firebase Admin not configured or token invalid' });
     }
 
     const user = await db.user.upsert({
