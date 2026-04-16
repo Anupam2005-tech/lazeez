@@ -10,10 +10,9 @@
   "categories": ["food", "shopping"],
   "icons": [
     {
-      "src": "/favicon.svg",
+      "src": "/favicon.png",
       "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
+      "type": "image/png"
     },
     {
       "src": "/favicon-192x192.png",

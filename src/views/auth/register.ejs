@@ -70,14 +70,31 @@
 <script>
   document.getElementById('registerForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    const name = document.getElementById('name').value;
-    let recaptchaToken = '';
-    if (window.grecaptcha && window.RECAPTCHA_SITE_KEY) {
-      recaptchaToken = await grecaptcha.execute(window.RECAPTCHA_SITE_KEY, {action: 'register'});
+    const btn = e.target.querySelector('button[type="submit"]');
+    if (btn) {
+      btn.disabled = true;
+      btn.classList.add('btn-loading');
     }
-    RestoAuth.handleEmailRegister(email, password, name, '/auth/verify-token', recaptchaToken);
+
+    try {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const name = document.getElementById('name').value;
+      let recaptchaToken = '';
+      if (window.grecaptcha && window.RECAPTCHA_SITE_KEY) {
+        try {
+          recaptchaToken = await grecaptcha.execute(window.RECAPTCHA_SITE_KEY, {action: 'register'});
+        } catch(e) {}
+      }
+      await RestoAuth.handleEmailRegister(email, password, name, '/auth/verify-token', recaptchaToken);
+    } catch (err) {
+      console.error('Registration error:', err);
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.classList.remove('btn-loading');
+      }
+    }
   });
 </script>
 

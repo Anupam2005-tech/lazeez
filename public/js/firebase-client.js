@@ -25,7 +25,7 @@ async function verifyTokenOnServer(idToken, endpoint = '/auth/verify-token', rec
     });
     const data = await response.json();
     if (data.success) {
-      window.location.reload();
+      window.location.href = '/';
     } else {
       showAlert(data.error || 'Authentication failed');
     }

@@ -92,51 +92,43 @@
     btn.disabled = true;
     btn.classList.add('btn-loading');
 
-    // Try Firebase auth first, fall back to local auth
     try {
-      if (window.RestoAuth && window.RestoAuth.handleEmailLogin) {
-        var recaptchaToken = '';
-        if (window.grecaptcha && window.RECAPTCHA_SITE_KEY) {
-          try { recaptchaToken = await grecaptcha.execute(window.RECAPTCHA_SITE_KEY, {action: 'login'}); } catch(e) {}
-        }
-        // Attempt Firebase login
-        var auth = firebase.auth();
-        var cred = await auth.signInWithEmailAndPassword(email, password);
-        var idToken = await cred.user.getIdToken();
-        var res = await fetch('/auth/verify-token', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ idToken: idToken, recaptchaToken: recaptchaToken })
-        });
-        var data = await res.json();
-        if (data.success) {
-          window.location.href = '/';
-          return;
-        }
-        showError(data.error || 'Login failed');
-      } else {
-        throw new Error('Firebase not available');
+      var recaptchaToken = '';
+      if (window.grecaptcha && window.RECAPTCHA_SITE_KEY) {
+        try { recaptchaToken = await grecaptcha.execute(window.RECAPTCHA_SITE_KEY, {action: 'login'}); } catch(e) {}
       }
-    } catch (firebaseErr) {
-      // Firebase failed, try local auth
-      try {
-        var res = await fetch('/auth/local-login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: email, password: password })
-        });
-        var data = await res.json();
-        if (data.success) {
-          window.location.href = '/';
-          return;
+
+      // 1. Try Firebase Auth via shared helper
+      if (window.RestoAuth && window.RestoAuth.handleEmailLogin && window.firebase && firebase.apps.length) {
+        try {
+          await window.RestoAuth.handleEmailLogin(email, password, '/auth/verify-token', recaptchaToken);
+          // Redirection is handled inside verifyTokenOnServer in firebase-client.js
+          return; 
+        } catch (firebaseErr) {
+          console.warn('Firebase login failed, trying local auth...', firebaseErr);
         }
-        showError(data.error || 'Login failed');
-      } catch (localErr) {
-        showError('Login failed. Please check your credentials.');
       }
+
+      // 2. Fallback to Local Auth
+      var res = await fetch('/auth/local-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, password: password })
+      });
+      var data = await res.json();
+      
+      if (data.success) {
+        window.location.href = '/';
+        return;
+      }
+      showError(data.error || 'Login failed');
+    } catch (err) {
+      console.error('Login error:', err);
+      showError('Login failed. Please check your credentials.');
+    } finally {
+      btn.disabled = false;
+      btn.classList.remove('btn-loading');
     }
-    btn.disabled = false;
-    btn.classList.remove('btn-loading');
   });
 </script>
 
